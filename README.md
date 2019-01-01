@@ -1,2 +1,2 @@
 # Draggable-Resizable-Dialog
-Draggable and resizable dialog box
+Pure Javascript draggable and resizable dialog box

@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<!--meta http-equiv="refresh" content="1;url="-->
+	<title>Draggable and Risizable Dialog Box</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="author" content="ZulNs">
+	<meta name="keywords" content="">
+	<meta name="description" content="">
+	<meta name="robots" content="all">
+	<meta name="copyright" content="ZulNs">
+	<!--link rel="icon" href="favicon.ico" type="image/x-icon" /-->
+	<!--link rel="icon" href="favicon.png" type="image/png" /-->
+</head>
+<body>
+<!-- HTML here... -->
+<p><button id="show-dialog" onclick="showDialog();">Show Dialog</button></p>
+<link rel="stylesheet" href="../dist/toolwindow.css" />
+<script type="text/javascript" src="../dist/toolwindow.js"></script>
+<script type="text/javascript">
+	var dialog;
+    function showDialog() {
+    	dialog = dialog || new ToolWindow({
+			content: {
+				type: "url",
+				value: "https://localhost:44303/#/app"
+				// value: "Bacon ipsum dolor amet hamburger bacon pork turkey pig, short ribs burgdoggen chicken doner pork belly meatball. Jerky pork loin buffalo, ground round short loin corned beef bresaola burgdoggen turkey. Beef sausage porchetta, drumstick buffalo jerky meatloaf. Drumstick prosciutto chuck swine. Shankle porchetta tri-tip cupim biltong beef ribs cow picanha corned beef pork chop tongue doner meatball ribeye. Picanha buffalo flank, ribeye turkey pastrami chuck. Bacon ipsum dolor amet hamburger bacon pork turkey pig, short ribs burgdoggen chicken doner pork belly meatball. Jerky pork loin buffalo, ground round short loin corned beef bresaola burgdoggen turkey. Beef sausage porchetta, drumstick buffalo jerky meatloaf. Drumstick prosciutto chuck swine. Shankle porchetta tri-tip cupim biltong beef ribs cow picanha corned beef pork chop tongue doner meatball ribeye. Picanha buffalo flank, ribeye turkey pastrami chuck."
+			}
+		});
+    	dialog.show();
+	}
+	showDialog();
+</script>
+</body>
+</html>

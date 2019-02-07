@@ -24,10 +24,12 @@ declare module "toolwindow" {
     type StringSource = () => string;
     type AsyncStringSource = () => Promise<string>;
 
-    class ToolWindow {
+    interface IToolWindow {
         constructor(options: IToolWindowOptions);
         show(): void;
         hide(): void;
         refresh(): void;
     }
+
+    const ToolWindow: IToolWindow;
 }

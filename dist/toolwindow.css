@@ -93,3 +93,24 @@ Use this as a template for toolwindow styling
 	background: InactiveCaption;
 	transition: 1s;
 }
+
+.gripper {
+	width: 0;
+	height: 0;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-bottom: 5px solid ButtonShadow;
+	position: absolute;
+}
+
+.gripper.left {
+    left: -3px;
+	bottom: -1px;
+	transform: rotate(-135deg);
+}
+
+.gripper.right {
+	right: -3px;
+	bottom: -1px;
+	transform: rotate(135deg);
+}

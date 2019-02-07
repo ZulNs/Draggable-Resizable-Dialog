@@ -194,6 +194,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           }
         });
       },
+      _createGrippers: function _createGrippers() {
+        this._mkDiv(["gripper", "left"], this._dialog);
+        this._mkDiv(["gripper", "right"], this._dialog);
+      },
 
 
       _createDialogStructure: function _createDialogStructure() {
@@ -201,6 +205,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         this._createTitlebar();
         this._createContentArea();
         this._createButtonBar();
+        this._createGrippers();
       },
 
       _bindMouseEvents: function _bindMouseEvents() {

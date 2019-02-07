@@ -2,6 +2,9 @@
   "name": "toolwindow",
   "version": "1.0.3",
   "description": "Provides a draggable, resizable tool window for text, html and remote (iframed) content",
+  "keywords": [
+    "window", "browser", "mdi", "tool", "floating"
+  ],
   "main": "index.js",
   "scripts": {
     "build": "run-s browserify transpile minify",
@@ -31,7 +34,6 @@
     "type": "git",
     "url": "git+https://github.com/fluffynuts/toolwindow.git"
   },
-  "keywords": [],
   "author": "",
   "license": "BSD-3-Clause",
   "bugs": {

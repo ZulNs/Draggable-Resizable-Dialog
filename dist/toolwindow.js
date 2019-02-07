@@ -32,7 +32,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       buttons: [{
         text: "Ok",
         clicked: function clicked() {
-          this.close();
+          this.hide();
         }
       }],
       minWidth: 200,
@@ -101,7 +101,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
         this.refresh();
       },
-      close: function close() {
+      hide: function hide() {
         this._dialog.style.display = "none";
       },
       refresh: function refresh() {
@@ -173,7 +173,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
         this._closeButton = this._mkEl("button", "close", this._dialogTitle);
         this._closeButton.innerText = this._options.closeButtonText;
-        this._closeButton.addEventListener("click", this.close.bind(this));
+        this._closeButton.addEventListener("click", this.hide.bind(this));
       },
       _createContentArea: function _createContentArea() {
         this._dialogContent = this._mkDiv("content", this._dialog);

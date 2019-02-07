@@ -39,6 +39,7 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       minHeight: 200,
       width: 350,
       height: 200,
+      minZIndex: 1000,
       top: undefined,
       left: undefined,
       resizeHandleSize: 10,
@@ -51,72 +52,35 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     var zIndex = 1000;
 
     function ToolWindow(options) {
-      var _this = this;
 
       this._options = Object.assign({}, defaultOptions, options || {});
+      if (this._options.minZIndex > zIndex) {
+        zIndex = this._options.minZIndex;
+      }
 
       this._minW = this._options.minWidth;
       this._minH = this._options.minHeight;
+      if (this._options.width < this._minW) {
+        this._options.width = this._minW;
+      }
+      if (this._options.height < this._minH) {
+        this._options.height = this._minH;
+      }
       this._resizePixel = this._options.resizeHandleSize;
       this._hasEventListeners = !!window.addEventListener;
-
-      this._dialog = this._mkDiv("dialog", document.body);
-      this._dialog.style.width = this._px(this._options.width);
-      this._dialog.style.height = this._px(this._options.height);
-
-      this._dialogTitle = this._mkDiv("titlebar", this._dialog);
-      this._dialogTitle.innerText = this._options.title;
-
-      this._closeButton = this._mkEl("button", "close", this._dialogTitle);
-      this._closeButton.innerText = this._options.closeButtonText;
-      this._closeButton.addEventListener("click", this.close.bind(this));
-
-      this._dialogContent = this._mkDiv("content", this._dialog);
-      this._coverContentDuringMoveAndResize = false;
-      switch (this._options.content.type) {
-        case "text":
-          this._dialogContent.innerText = this._options.content.value;
-          break;
-        case "html":
-        case "text/html":
-          this._dialogContent.innerHTML = this._options.content.value;
-          break;
-        case "url":
-          var iframe = this._mkEl("iframe", "content-iframe", this._dialogContent);
-          iframe.src = this._options.content.value;
-          this._coverContentDuringMoveAndResize = true;
-          break;
-        default:
-          throw new Error("Content type not supported: " + (this.options.content.type || "(not set)"));
-      }
-
-      this._buttonBar = this._mkDiv("button-bar", this._dialog);
-
-      this._buttons = this._options.buttons.map(function (def) {
-        var btn = _this._mkEl("button", "dialog-button", _this._buttonBar);
-        btn.innerText = def.text;
-        if (def.clicked) {
-          btn.addEventListener("click", function (ev) {
-            def.clicked.apply(_this, ev);
-          });
-        }
-      });
-
       this._isDrag = false;
       this._isResize = false;
       this._isButton = false;
       this._resizeMode = '';
       this._initialPlacementDone = false;
 
-      this._setDialogContentSizing();
-      this._addEvent(this._dialog, 'mousedown', this._onMouseDown.bind(this));
-      this._addEvent(document, 'mousemove', this._onMouseMove.bind(this));
-      this._addEvent(document, 'mouseup', this._onMouseUp.bind(this));
+      this._createDialogStructure();
+      this._bindMouseEvents();
 
+      // TODO: fix this magick -- should probably be calculated on first show,
+      //  once the buttons are actually rendered
       this._minW = Math.max(this._minW, (this._buttons.length - 1) * 84 + 13);
       this._minW = Math.max(this._minW, (this._buttons.length - 1) * 84 + 13);
-      this._dialog.style.display = 'none';
-      this._dialog.style.zIndex = (++zIndex).toString();
     }
 
     ToolWindow.prototype = {
@@ -135,21 +99,123 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           this._initialPlacementDone = true;
           this.moveTo(left, top, this._options.width, this._options.height);
         }
+        this.refresh();
       },
-
-      _raiseDialog: function _raiseDialog() {
-        this._dialog.style.zIndex = (++zIndex).toString();
-      },
-
       close: function close() {
         this._dialog.style.display = "none";
       },
+      refresh: function refresh() {
+        var _this = this;
 
+        if (!this._options.content) {
+          this._dialogContent.innerText = "No content defined";
+          return;
+        }
+        switch (this._options.content.type) {
+          case "text":
+            this._fetchContent(function (result) {
+              return _this._dialogContent.innerText = result;
+            });
+            break;
+          case "html":
+          case "text/html":
+            this._fetchContent(function (result) {
+              return _this._dialogContent.innerHTML = result;
+            });
+            break;
+          case "url":
+            var iframe = this._dialogContent.querySelector("iframe");
+            if (!iframe) {
+              iframe = this._mkEl("iframe", "content-iframe", this._dialogContent);
+            }
+            this._fetchContent(function (result) {
+              if (iframe.src === result) {
+                iframe.src = "about:blank";
+                window.setTimeout(function () {
+                  iframe.src = result;
+                }, 0);
+              } else {
+                iframe.src = result;
+              }
+            });
+            break;
+          default:
+            throw new Error("Content type not handled: " + (this._options.content.type || "(not set)"));
+        }
+      },
+      _fetchContent: function _fetchContent(callback) {
+        if (typeof this._options.content.value === "function") {
+          var result = this._options.content.value();
+          if (typeof result["then"] === "function") {
+            result.then(function (content) {
+              callback(content);
+            });
+          } else {
+            callback(result);
+          }
+        } else {
+          callback(this._options.content.value);
+        }
+      },
+
+
+      _createDialog: function _createDialog() {
+        this._dialog = this._mkDiv("dialog", document.body);
+        this._dialog.style.width = this._px(this._options.width);
+        this._dialog.style.height = this._px(this._options.height);
+        this._dialog.style.display = 'none';
+        this._dialog.style.zIndex = (++zIndex).toString();
+      },
+
+      _createTitlebar: function _createTitlebar() {
+        this._dialogTitle = this._mkDiv("titlebar", this._dialog);
+        this._dialogTitle.innerText = this._options.title;
+
+        this._closeButton = this._mkEl("button", "close", this._dialogTitle);
+        this._closeButton.innerText = this._options.closeButtonText;
+        this._closeButton.addEventListener("click", this.close.bind(this));
+      },
+      _createContentArea: function _createContentArea() {
+        this._dialogContent = this._mkDiv("content", this._dialog);
+        this._coverContentDuringMoveAndResize = this._options.content.type === "url";
+      },
+      _createButtonBar: function _createButtonBar() {
+        var _this2 = this;
+
+        this._buttonBar = this._mkDiv("button-bar", this._dialog);
+
+        this._buttons = this._options.buttons.map(function (def) {
+          var btn = _this2._mkEl("button", "dialog-button", _this2._buttonBar);
+          btn.innerText = def.text;
+          if (def.clicked) {
+            btn.addEventListener("click", function (ev) {
+              def.clicked.apply(_this2, ev);
+            });
+          }
+        });
+      },
+
+
+      _createDialogStructure: function _createDialogStructure() {
+        this._createDialog();
+        this._createTitlebar();
+        this._createContentArea();
+        this._createButtonBar();
+      },
+
+      _bindMouseEvents: function _bindMouseEvents() {
+        this._setDialogContentSizing();
+        this._addEvent(this._dialog, 'mousedown', this._onMouseDown.bind(this));
+        this._addEvent(document, 'mousemove', this._onMouseMove.bind(this));
+        this._addEvent(document, 'mouseup', this._onMouseUp.bind(this));
+      },
+      _raiseDialog: function _raiseDialog() {
+        this._dialog.style.zIndex = (++zIndex).toString();
+      },
       _px: function _px(value) {
         value = (value || "0") + "";
         return value.match(/px$/) ? value : value + "px";
       },
-
       _mkDiv: function _mkDiv(classList, parent) {
         return this._mkEl("div", classList, parent);
       },
@@ -168,8 +234,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
         return el;
       },
-
-
       _addEvent: function _addEvent(elm, evt, callback) {
         if (elm == null || (typeof elm === "undefined" ? "undefined" : _typeof(elm)) === undefined) {
           return;
@@ -182,7 +246,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           elm['on' + evt] = callback;
         }
       },
-
       _returnEvent: function _returnEvent(evt) {
         if (evt.stopPropagation) evt.stopPropagation();
         if (evt.preventDefault) evt.preventDefault();else {
@@ -190,7 +253,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           return false;
         }
       },
-
       _onMouseDown: function _onMouseDown(evt) {
         this._raiseDialog();
         evt = evt || window.event;
@@ -224,7 +286,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
         return this._returnEvent(evt);
       },
-
       _createContentCover: function _createContentCover() {
         if (this._contentCover) {
           this._contentCover.remove();
@@ -255,8 +316,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
         this._contentCover = undefined;
       },
-
-
       moveTo: function moveTo(left, top, width, height) {
         if (left !== undefined) {
           this._dialog.style.left = this._px(left);
@@ -266,7 +325,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
         this.resizeTo(width, height);
       },
-
       _doDrag: function _doDrag(evt) {
         var dx = this._startX - evt.pageX,
             dy = this._startY - evt.pageY,
@@ -327,7 +385,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
         window.scrollTo(scrollL, scrollT);
       },
-
       resizeTo: function resizeTo(width, height) {
         if (width !== undefined) {
           this._dialog.style.width = this._px(width);
@@ -337,8 +394,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
         this._fitContentCoverOverContent();
       },
-
-
       _doResize: function _doResize(evt) {
         var dw = void 0,
             dh = void 0,
@@ -438,7 +493,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
         this._setDialogContentSizing();
       },
-
       _onMouseMove: function _onMouseMove(evt) {
         evt = evt || window.event;
         if (!evt || !evt.target) {
@@ -483,7 +537,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
         return this._returnEvent(evt);
       },
-
       _onMouseUp: function _onMouseUp(evt) {
         evt = evt || window.event;
         if (this._isDrag) {
@@ -499,7 +552,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         this._removeContentCover();
         return this._returnEvent(evt);
       },
-
       _getOffset: function _getOffset(elm) {
         var rect = elm.getBoundingClientRect(),
             offsetX = window.scrollX || document.documentElement.scrollLeft,
@@ -511,12 +563,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           bottom: rect.bottom + offsetY
         };
       },
-
       _setCursor: function _setCursor(cur) {
         this._dialog.style.cursor = cur;
         this._dialogTitle.style.cursor = cur;
       },
-
       _setDialogContentSizing: function _setDialogContentSizing() {}
     };
 

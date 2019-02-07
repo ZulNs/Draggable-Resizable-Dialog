@@ -8,7 +8,9 @@
     "browserify": "browserify browser.js -o dist/toolwindow.js",
     "transpile": "babel --presets es2015 dist/toolwindow.js -o dist/toolwindow.js",
     "minify": "uglifyjs --compress --mangle -o dist/toolwindow.min.js -- dist/toolwindow.js",
-    "autobuild": "nodemon -w lib -x \"run-s build\""
+    "autobuild": "nodemon -w lib -x \"run-s build\"",
+    "release": "unleash -p --no-publish",
+    "postrelease": "echo unleash doesn't handle 2FA, so please run 'npm publish' now"
   },
   "directories": {
     "lib": "lib",
@@ -22,7 +24,8 @@
     "browserify": "^16.2.3",
     "nodemon": "^1.18.9",
     "npm-run-all": "^4.1.5",
-    "uglify-js": "^3.4.9"
+    "uglify-js": "^3.4.9",
+    "unleash": "^2.0.1"
   },
   "repository": {
     "type": "git",

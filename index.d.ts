@@ -24,7 +24,7 @@ export type StringSource = () => string;
 export type AsyncStringSource = () => Promise<string>;
 
 declare class ToolWindow {
-    new(options: IToolWindowOptions);
+    constructor(options: IToolWindowOptions);
     show(): void;
     hide(): void;
     refresh(): void;

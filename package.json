@@ -1,9 +1,13 @@
 {
   "name": "toolwindow",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Provides a draggable, resizable tool window for text, html and remote (iframed) content",
   "keywords": [
-    "window", "browser", "mdi", "tool", "floating"
+    "window",
+    "browser",
+    "mdi",
+    "tool",
+    "floating"
   ],
   "main": "index.js",
   "scripts": {

@@ -1,0 +1,30 @@
+{
+  "name": "toolwindow",
+  "version": "1.0.0",
+  "description": "Provides a draggable, resizable tool window for text, html and remote (iframed) content",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "browserify": "^16.2.3",
+    "nodemon": "^1.18.9",
+    "npm-run-all": "^4.1.5"
+  },
+  "scripts": {
+    "build": "browserify browser.js -o dist/toolwindow.js",
+    "autobuild": "nodemon -w lib -x \"run-s build\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fluffynuts/toolwindow.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/fluffynuts/toolwindow/issues"
+  },
+  "homepage": "https://github.com/fluffynuts/toolwindow#readme"
+}

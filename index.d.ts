@@ -23,7 +23,7 @@ export interface IToolWindowContent {
 export type StringSource = () => string;
 export type AsyncStringSource = () => Promise<string>;
 
-export interface ToolWindow {
+declare class ToolWindow {
     new(options: IToolWindowOptions);
     show(): void;
     hide(): void;

@@ -35,6 +35,10 @@ Use this as a template for toolwindow styling
 	height: calc(100% - 84px);
 }
 
+.dialog .content.no-buttons {
+	height: calc(100% - 42px);
+}
+
 .dialog .content iframe {
 	border: none;
 }

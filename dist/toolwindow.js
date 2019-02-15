@@ -182,8 +182,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       _createButtonBar: function _createButtonBar() {
         var _this2 = this;
 
-        this._buttonBar = this._mkDiv("button-bar", this._dialog);
-
         this._buttons = this._options.buttons.map(function (def) {
           var btn = _this2._mkEl("button", "dialog-button", _this2._buttonBar);
           btn.innerText = def.text;
@@ -193,6 +191,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             });
           }
         });
+
+        if (this._buttons.length === 0) {
+          this._dialogContent.classList.add("no-buttons");
+          return;
+        }
+
+        this._buttonBar = this._mkDiv("button-bar", this._dialog);
       },
       _createGrippers: function _createGrippers() {
         this._mkDiv(["gripper", "left"], this._dialog);

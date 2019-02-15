@@ -20,17 +20,35 @@
     <button onclick="showTextDialog();">Show TEXT Dialog</button>
     <button onclick="showHtmlDialog();">Show HTML Dialog</button>
     <button onclick="showHtmlDialogAsync();">Show HTML Dialog (async)</button>
+    <button onclick="showDialogWithNoButtons();">Show Dialog with NO buttons</button>
 </p>
 <link rel="stylesheet" href="../dist/toolwindow.css"/>
 <script type="text/javascript" src="../dist/toolwindow.js"></script>
 <script type="text/javascript">
   var
+    noButtonsDialog,
     iframeDialog,
     textDialog,
     htmlDialog,
     htmlDialogAsync,
     asyncCount = 0,
     bacon = "Bacon ipsum dolor amet hamburger bacon pork turkey pig, short ribs burgdoggen chicken doner pork belly meatball. Jerky pork loin buffalo, ground round short loin corned beef bresaola burgdoggen turkey. Beef sausage porchetta, drumstick buffalo jerky meatloaf. Drumstick prosciutto chuck swine. Shankle porchetta tri-tip cupim biltong beef ribs cow picanha corned beef pork chop tongue doner meatball ribeye. Picanha buffalo flank, ribeye turkey pastrami chuck. Bacon ipsum dolor amet hamburger bacon pork turkey pig, short ribs burgdoggen chicken doner pork belly meatball. Jerky pork loin buffalo, ground round short loin corned beef bresaola burgdoggen turkey. Beef sausage porchetta, drumstick buffalo jerky meatloaf. Drumstick prosciutto chuck swine. Shankle porchetta tri-tip cupim biltong beef ribs cow picanha corned beef pork chop tongue doner meatball ribeye. Picanha buffalo flank, ribeye turkey pastrami chuck.";
+
+  function showDialogWithNoButtons() {
+    noButtonsDialog = noButtonsDialog || new ToolWindow({
+      title: "Look, Ma! No Buttons!",
+      left: 250,
+      top: 400,
+      minWidth: 400,
+      minHeight: 100,
+      content: {
+        type: "text",
+        value: bacon
+      },
+      buttons: []
+    });
+    noButtonsDialog.show();
+  }
 
   function showIframeDialog() {
     iframeDialog = iframeDialog || new ToolWindow({
@@ -46,20 +64,21 @@
       buttons: [
         {
           text: "Refresh",
-          clicked: function() {
+          clicked: function () {
             this.refresh();
           }
         },
         {
           text: "Dismiss",
-          clicked: function() {
+          clicked: function () {
             this.hide()
           }
         }
-        ],
+      ],
     });
     iframeDialog.show();
   }
+
   function showTextDialog() {
     textDialog = textDialog || new ToolWindow({
       title: "Demo Tool Window",
@@ -79,7 +98,7 @@
       buttons: [
         {
           text: "Do stuff",
-          clicked: function(evt) {
+          clicked: function (evt) {
             alert("clicked! See console log for event and context info.");
             console.log({
               context: this,
@@ -89,7 +108,7 @@
         },
         {
           text: "Dismiss",
-          clicked: function() {
+          clicked: function () {
             this.hide();
           }
         }
@@ -110,7 +129,7 @@
       buttons: [
         {
           text: "Do stuff",
-          clicked: function(evt) {
+          clicked: function (evt) {
             alert("clicked! See console log for event and context info.");
             console.log({
               context: this,
@@ -120,13 +139,13 @@
         },
         {
           text: "Refresh",
-          clicked: function() {
+          clicked: function () {
             this.refresh();
           }
         },
         {
           text: "Dismiss",
-          clicked: function() {
+          clicked: function () {
             this.hide();
           }
         }
@@ -135,8 +154,8 @@
       left: 350,
       content: {
         type: "html",
-        value: function() {
-          return new Promise(function(resolve) {
+        value: function () {
+          return new Promise(function (resolve) {
             resolve("<html lang=\"en\"><head><title></title></title></head><body><h2>HTML Content [ refreshed: " + (++asyncCount) + " time" + (asyncCount === 1 ? "" : "s") + "]!</h2><p>" + bacon + "</p></body></html>");
           });
         }

@@ -61,8 +61,8 @@ Use this as a template for toolwindow styling
     background: transparent;
 	position: absolute;
 	right: 0;
-	border-left-width: 0px;
-	border-bottom-width: 0px;
+	border-left-width: 0;
+	border-bottom-width: 0;
 	border-top-width: 0;
     border-right-width: 0;
     border-style: solid;
@@ -84,9 +84,9 @@ Use this as a template for toolwindow styling
 	background: ButtonFace;
 	border: 1px solid ThreeDShadow;
 	height: 32px;
-	width: 64px;
+	min-width: 64px;
 	font-size: 1.1em;
-	padding: 0;
+	padding: 0 5px;
     margin: 5px;
 	cursor: pointer;
 }

@@ -84,6 +84,13 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
     }
 
     ToolWindow.prototype = {
+      get content() {
+        return this._options.content;
+      },
+      set content(value) {
+        this._options.content = value;
+      },
+
       show: function show() {
         // TODO: optionally determine initial placement from
         //  a provided event object
@@ -108,24 +115,25 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         var _this = this;
 
         if (!this._options.content) {
-          this._dialogContent.innerText = "No content defined";
+          this._setText("No content defined");
           return;
         }
         switch (this._options.content.type) {
           case "text":
             this._fetchContent(function (result) {
-              return _this._dialogContent.innerText = result;
+              return _this._setText(result);
             });
             break;
           case "html":
           case "text/html":
             this._fetchContent(function (result) {
-              return _this._dialogContent.innerHTML = result;
+              return _this._setHTML(result);
             });
             break;
           case "url":
             var iframe = this._dialogContent.querySelector("iframe");
             if (!iframe) {
+              this._setText(null);
               iframe = this._mkEl("iframe", "content-iframe", this._dialogContent);
             }
             this._fetchContent(function (result) {
@@ -143,10 +151,21 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
             throw new Error("Content type not handled: " + (this._options.content.type || "(not set)"));
         }
       },
+      _setText: function _setText(text) {
+        this._dialogContent.innerHTML = "";
+        this._dialogContent.innerText = text;
+      },
+      _setHTML: function _setHTML(html) {
+        this._dialogContent.innerText = "";
+        this._dialogContent.innerHTML = html;
+      },
+      _looksLikeAPromise: function _looksLikeAPromise(obj) {
+        return obj && typeof obj["then"] === "function";
+      },
       _fetchContent: function _fetchContent(callback) {
         if (typeof this._options.content.value === "function") {
           var result = this._options.content.value();
-          if (typeof result["then"] === "function") {
+          if (this._looksLikeAPromise(result)) {
             result.then(function (content) {
               callback(content);
             });
@@ -182,22 +201,37 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       _createButtonBar: function _createButtonBar() {
         var _this2 = this;
 
-        this._buttons = this._options.buttons.map(function (def) {
-          var btn = _this2._mkEl("button", "dialog-button", _this2._buttonBar);
-          btn.innerText = def.text;
-          if (def.clicked) {
-            btn.addEventListener("click", function (ev) {
-              def.clicked.apply(_this2, ev);
-            });
-          }
-        });
-
-        if (this._buttons.length === 0) {
+        if (this._options.buttons.length === 0) {
           this._dialogContent.classList.add("no-buttons");
           return;
         }
 
         this._buttonBar = this._mkDiv("button-bar", this._dialog);
+        this._buttons = this._options.buttons.map(function (def) {
+          var btn = _this2._mkEl("button", "dialog-button", _this2._buttonBar);
+          btn.innerText = def.text;
+          if (def.clicked) {
+            btn.addEventListener("click", function (ev) {
+              btn.disabled = true;
+              var returnState = false;
+              try {
+                var result = def.clicked.apply(_this2, ev);
+                if (_this2._looksLikeAPromise(result)) {
+                  returnState = true;
+                  result.then(function () {
+                    btn.disabled = false;
+                  }).catch(function (err) {
+                    console.error(err);
+                    btn.disabled = false;
+                  });
+                }
+              } catch (e) {
+                console.error(e);
+              }
+              btn.disabled = returnState;
+            });
+          }
+        });
       },
       _createGrippers: function _createGrippers() {
         this._mkDiv(["gripper", "left"], this._dialog);

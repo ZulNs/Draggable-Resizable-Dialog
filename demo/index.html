@@ -21,11 +21,13 @@
     <button onclick="showHtmlDialog();">Show HTML Dialog</button>
     <button onclick="showHtmlDialogAsync();">Show HTML Dialog (async)</button>
     <button onclick="showDialogWithNoButtons();">Show Dialog with NO buttons</button>
+    <button onclick="showRefreshingDialog();">Show Refreshing Dialog</button>
 </p>
 <link rel="stylesheet" href="../dist/toolwindow.css"/>
 <script type="text/javascript" src="../dist/toolwindow.js"></script>
 <script type="text/javascript">
   var
+    refreshingDialog,
     noButtonsDialog,
     iframeDialog,
     textDialog,
@@ -33,6 +35,38 @@
     htmlDialogAsync,
     asyncCount = 0,
     bacon = "Bacon ipsum dolor amet hamburger bacon pork turkey pig, short ribs burgdoggen chicken doner pork belly meatball. Jerky pork loin buffalo, ground round short loin corned beef bresaola burgdoggen turkey. Beef sausage porchetta, drumstick buffalo jerky meatloaf. Drumstick prosciutto chuck swine. Shankle porchetta tri-tip cupim biltong beef ribs cow picanha corned beef pork chop tongue doner meatball ribeye. Picanha buffalo flank, ribeye turkey pastrami chuck. Bacon ipsum dolor amet hamburger bacon pork turkey pig, short ribs burgdoggen chicken doner pork belly meatball. Jerky pork loin buffalo, ground round short loin corned beef bresaola burgdoggen turkey. Beef sausage porchetta, drumstick buffalo jerky meatloaf. Drumstick prosciutto chuck swine. Shankle porchetta tri-tip cupim biltong beef ribs cow picanha corned beef pork chop tongue doner meatball ribeye. Picanha buffalo flank, ribeye turkey pastrami chuck.";
+
+  function showRefreshingDialog() {
+    refreshingDialog = refreshingDialog || new ToolWindow({
+      title: "Refreshing window",
+      content: {
+        type: "text",
+        value: () => "Counter is: "
+      },
+      buttons: [{
+        text: "Increment counter",
+        clicked: function() {
+          // note that
+          if (this.__counter === undefined) {
+            this.__counter = 0;
+          }
+          this.__counter++;
+          this.content.value = "Counter is: " + this.__counter;
+          this.refresh();
+        }
+      }, {
+        text: "Get a face",
+        clicked: function() {
+          this.content = {
+            type: "url",
+            value: "http://thispersondoesnotexist.com"
+          };
+          this.refresh();
+        }
+      }]
+    });
+    refreshingDialog.show();
+  }
 
   function showDialogWithNoButtons() {
     noButtonsDialog = noButtonsDialog || new ToolWindow({

@@ -37,6 +37,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       }],
       minWidth: 200,
       minHeight: 200,
+      maxWidth: 0, // values <= 0 will result in the dialog never growing larger than window.clientWidth
+      maxHeight: 0, // values <= 0 will result in the dialog never growing larger than window.clientHeight
+      autoFitContent: true, // attempt to autofit to content on first show
+      keepOnScreen: true,
       width: 350,
       height: 200,
       minZIndex: 1000,
@@ -81,6 +85,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       //  once the buttons are actually rendered
       this._minW = Math.max(this._minW, (this._buttons.length - 1) * 84 + 13);
       this._minW = Math.max(this._minW, (this._buttons.length - 1) * 84 + 13);
+
+      this._shownCount = 0;
     }
 
     ToolWindow.prototype = {
@@ -89,6 +95,14 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       },
       set content(value) {
         this._options.content = value;
+      },
+
+      get _maxW() {
+        return this._options.maxWidth < 1 ? this._options.keepOnScreen ? window.innerWidth : Number.MAX_SAFE_INTEGER : this._options.maxWidth;
+      },
+
+      get _maxH() {
+        return this._options.maxHeight < 1 ? this._options.keepOnScreen ? window.innerHeight : Number.MAX_SAFE_INTEGER : this._options.maxHeight;
       },
 
       show: function show() {
@@ -107,6 +121,10 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           this.moveTo(left, top, this._options.width, this._options.height);
         }
         this.refresh();
+        if (this._shownCount === 0 && this._options.autoFitContent) {
+          this.fitContent();
+        }
+        this._shownCount++;
       },
       hide: function hide() {
         this._dialog.style.display = "none";
@@ -150,6 +168,116 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           default:
             throw new Error("Content type not handled: " + (this._options.content.type || "(not set)"));
         }
+      },
+
+
+      get dimensions() {
+        var _this2 = this;
+
+        return ["top", "left", "width", "height"].reduce(function (acc, cur) {
+          acc[cur] = parseInt(_this2._dialog.style[cur]);
+          return acc;
+        }, {});
+      },
+
+      fitContent: function fitContent() {
+        var ctx = {
+          self: this,
+          rounds: 0,
+          lastDimensions: this.dimensions
+        };
+        window.setTimeout(function adjust() {
+          var currentDimensions = ctx.self.dimensions;
+          if (ctx.rounds > 0 && currentDimensions.width === ctx.lastDimensions.width && currentDimensions.height === ctx.lastDimensions.height) {
+            // resize may be blocked by max sizing
+            return;
+          }
+          ctx.rounds++;
+          var heightDelta = ctx.self._dialogContent.scrollHeight - ctx.self._dialogContent.clientHeight;
+          if (heightDelta > 0) {
+            var delta = Math.min(heightDelta, 10),
+                half = Math.round(delta / 2);
+            ctx.self.moveTo("-" + half, "-" + half, "+" + delta, "+" + delta);
+          } else if (heightDelta < 0) {
+            var _delta = Math.max(heightDelta, -10),
+                _half = Math.abs(Math.round(_delta / 2));
+            ctx.self.moveTo("-" + _half, "-" + _half, "" + _delta, "" + _delta);
+          }
+          ctx.lastDimensions = currentDimensions;
+          window.setTimeout(adjust, 1);
+        }, 1);
+      },
+      moveTo: function moveTo(left, top, width, height) {
+        if (left !== undefined && left !== null) {
+          left = this._grokRelative(left, this._dialog.style.left);
+          if (left < 0) {
+            left = 0;
+          }
+          left = Math.min(left, window.innerWidth - 5);
+          this._dialog.style.left = this._px(left);
+        }
+        if (top !== undefined && left !== null) {
+          top = this._grokRelative(top, this._dialog.style.top);
+          if (top < 0) {
+            top = 0;
+          }
+          top = Math.min(top, window.innerHeight - 5);
+          this._dialog.style.top = this._px(top);
+        }
+        this.resizeTo(width, height);
+        this.boundWithinScreen();
+      },
+      boundWithinScreen: function boundWithinScreen() {
+        if (!this._options.keepOnScreen) {
+          return;
+        }
+        var dimensions = this.dimensions;
+        if (dimensions.width > window.innerWidth) {
+          this.resizeTo(window.innerWidth);
+        }
+        if (dimensions.height > window.innerHeight) {
+          this.resizeTo(null, window.innerHeight);
+        }
+        if (dimensions.left < 0) {
+          this.moveTo(0);
+        }
+        if (dimensions.left + dimensions.width > window.innerWidth) {
+          this.moveTo(window.innerWidth - dimensions.width);
+        }
+        if (dimensions.top < 0) {
+          this.moveTo(0);
+        }
+        if (dimensions.top + dimensions.height > window.innerHeight) {
+          this.moveTo(null, window.innerHeight - dimensions.height);
+        }
+      },
+      resizeTo: function resizeTo(width, height) {
+        if (width !== undefined && width !== null) {
+          width = this._grokRelative(width, this._dialog.style.width);
+          if (width > this._maxW) {
+            width = this._maxW;
+          }
+          this._dialog.style.width = this._px(width);
+        }
+        if (height !== undefined && height !== null) {
+          height = this._grokRelative(height, this._dialog.style.height);
+          if (height > this._maxH) {
+            height = this._maxH;
+          }
+          this._dialog.style.height = this._px(height);
+        }
+        this._fitContentCoverOverContent();
+      },
+      _grokRelative: function _grokRelative(sizeSetting, currentSetting) {
+        if (typeof sizeSetting !== "string") {
+          return sizeSetting;
+        }
+        var delta = parseInt(sizeSetting),
+            current = parseInt(currentSetting);
+        if (isNaN(current)) {
+          current = 0;
+        }
+        return current + delta;
       },
       _setText: function _setText(text) {
         this._dialogContent.innerHTML = "";
@@ -199,24 +327,25 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         this._coverContentDuringMoveAndResize = this._options.content.type === "url";
       },
       _createButtonBar: function _createButtonBar() {
-        var _this2 = this;
+        var _this3 = this;
 
         if (this._options.buttons.length === 0) {
           this._dialogContent.classList.add("no-buttons");
+          this._buttons = [];
           return;
         }
 
         this._buttonBar = this._mkDiv("button-bar", this._dialog);
         this._buttons = this._options.buttons.map(function (def) {
-          var btn = _this2._mkEl("button", "dialog-button", _this2._buttonBar);
+          var btn = _this3._mkEl("button", "dialog-button", _this3._buttonBar);
           btn.innerText = def.text;
           if (def.clicked) {
             btn.addEventListener("click", function (ev) {
               btn.disabled = true;
               var returnState = false;
               try {
-                var result = def.clicked.apply(_this2, ev);
-                if (_this2._looksLikeAPromise(result)) {
+                var result = def.clicked.apply(_this3, ev);
+                if (_this3._looksLikeAPromise(result)) {
                   returnState = true;
                   result.then(function () {
                     btn.disabled = false;
@@ -360,15 +489,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
         }
         this._contentCover = undefined;
       },
-      moveTo: function moveTo(left, top, width, height) {
-        if (left !== undefined) {
-          this._dialog.style.left = this._px(left);
-        }
-        if (top !== undefined) {
-          this._dialog.style.top = this._px(top);
-        }
-        this.resizeTo(width, height);
-      },
       _doDrag: function _doDrag(evt) {
         var dx = this._startX - evt.pageX,
             dy = this._startY - evt.pageY,
@@ -428,15 +548,6 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           }
         }
         window.scrollTo(scrollL, scrollT);
-      },
-      resizeTo: function resizeTo(width, height) {
-        if (width !== undefined) {
-          this._dialog.style.width = this._px(width);
-        }
-        if (height !== undefined) {
-          this._dialog.style.height = this._px(height);
-        }
-        this._fitContentCoverOverContent();
       },
       _doResize: function _doResize(evt) {
         var dw = void 0,

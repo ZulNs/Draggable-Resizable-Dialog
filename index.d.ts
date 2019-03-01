@@ -25,15 +25,15 @@ declare module "toolwindow" {
         /**
          * values <= 0 will result in the dialog never growing larger than window.clientWidth
          */
-        maxWidth: 0,
+        maxWidth?: 0,
         /**
          * values <= 0 will result in the dialog never growing larger than window.clientHeight
          */
-        maxHeight: 0,
+        maxHeight?: 0,
         /**
          * attempt to autofit to content on first show
          */
-        autoFitContent: true,
+        autoFitContent?: boolean,
         /**
          * initial width
          */

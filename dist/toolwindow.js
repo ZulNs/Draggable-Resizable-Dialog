@@ -2,6 +2,8 @@
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 (function () {
   function r(e, n, t) {
     function o(i, f) {
@@ -19,6 +21,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 })()({ 1: [function (require, module, exports) {
     window.ToolWindow = require("./lib/toolwindow").ToolWindow;
   }, { "./lib/toolwindow": 2 }], 2: [function (require, module, exports) {
+    var _insidePositioners;
+
     /*
      * Pure JavaScript for Draggable and Risizable Dialog Box
      *
@@ -50,10 +54,73 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       content: {
         type: "text",
         value: ""
-      }
+      },
+      position: "auto", // can be any of: "auto", "topLeft", "topCenter", "topRight", "centerLeft", "center", "centerRight", "bottomLeft", "bottomCenter", "bottomRight"
+      relativePosition: "inside", // "inside" or "outside"
+      relativeToElement: null
     };
 
     var zIndex = 1000;
+
+    var positionRelations = {
+      inside: "inside",
+      outside: "outside"
+    };
+
+    var positions = {
+      auto: "auto",
+      topLeft: "topLeft",
+      topCenter: "topCenter",
+      topRight: "topRight",
+      centerLeft: "centerLeft",
+      center: "center",
+      centerRight: "centerRight",
+      bottomLeft: "bottomLeft",
+      bottomCenter: "bottomCenter",
+      bottomRight: "bottomRight"
+    };
+
+    var insidePositioners = (_insidePositioners = {}, _defineProperty(_insidePositioners, positions.center, function (tw, insideRect, dialogRect) {
+      var left = insideRect.left + (insideRect.width - dialogRect.width) / 2,
+          top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_insidePositioners, positions.topLeft, function (tw, insideRect) {
+      return tw.moveTo(insideRect.left, insideRect.top);
+    }), _defineProperty(_insidePositioners, positions.topCenter, function (tw, insideRect, dialogRect) {
+      var left = insideRect.left + (insideRect.width - dialogRect.width) / 2;
+      return tw.moveTo(left, insideRect.top);
+    }), _defineProperty(_insidePositioners, positions.topRight, function (tw, insideRect, dialogRect) {
+      var left = insideRect - dialogRect.width;
+      return tw.moveTo(left, insideRect.top);
+    }), _defineProperty(_insidePositioners, positions.centerLeft, function (tw, insideRect, dialogRect) {
+      var top = insideRect.top - (insideRect.height - dialogRect.height) / 2;
+      return tw.moveTo(insideRect.left, top);
+    }), _defineProperty(_insidePositioners, positions.centerRight, function (tw, insideRect, dialogRect) {
+      var left = insideRect.left + insideRect.width - dialogRect.width,
+          top = insideRect.top - (insideRect.height - dialogRect.height) / 2;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_insidePositioners, positions.bottomLeft, function (tw, insideRect, dialogRect) {
+      var top = insideRect.top + insideRect.height - dialogRect.height;
+      return tw.moveTo(insideRect.left, top);
+    }), _defineProperty(_insidePositioners, positions.bottomCenter, function (tw, insideRect, dialogRect) {
+      var left = insideRect.left + (insideRect.width - dialogRect.width / 2),
+          top = insideRect.top + insideRect.height - dialogRect.height;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_insidePositioners, positions.bottomRight, function (tw, insideRect, dialogRect) {
+      var left = insideRect.left + insideRect.width - dialogRect.width,
+          top = insideRect.top + insideRect.height - dialogRect.height;
+      return tw.moveTo(left, top);
+    }), _insidePositioners);
+
+    function warn() {
+      var args = Array.from(arguments);
+      if (typeof args[0] === "string") {
+        args[0] = "ToolWindow warning: " + args[0];
+      } else {
+        args.unshift("ToolWindow warning:");
+      }
+      console.warn.apply(console, args);
+    }
 
     function ToolWindow(options) {
 
@@ -187,6 +254,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           lastDimensions: this.dimensions
         };
         window.setTimeout(function adjust() {
+          if (ctx.self._shownCount < 2) {
+            ctx.self.moveToConfiguredStartPosition();
+          }
           var currentDimensions = ctx.self.dimensions;
           if (ctx.rounds > 0 && currentDimensions.width === ctx.lastDimensions.width && currentDimensions.height === ctx.lastDimensions.height) {
             // resize may be blocked by max sizing
@@ -206,6 +276,50 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
           ctx.lastDimensions = currentDimensions;
           window.setTimeout(adjust, 1);
         }, 1);
+      },
+      moveToConfiguredStartPosition: function moveToConfiguredStartPosition() {
+        if (this._options.position === positions.auto) {
+          return;
+        }
+        this._relativeElement = this._relativeElement || this._findRelativeElement();
+        if (!this._relativeElement) {
+          return;
+        }
+        var relative = this._options.relativePosition || positionRelations.inside;
+        if (relative === positionRelations.inside) {
+          this.positionInside(this._relativeElement, this._options.position);
+        } else {
+          this.positionOutside(this._relativeElement, this._options.position);
+        }
+      },
+      positionInside: function positionInside(el, pos) {
+        var insideRect = el.getBoundingClientRect(),
+            dialogRect = this._dialog.getBoundingClientRect();
+        var positioner = insidePositioners[pos];
+        if (!positioner) {
+          return console.error("position not understood: " + (pos || "nuffin!"));
+        }
+        positioner(this, insideRect, dialogRect);
+      },
+      positionOutside: function positionOutside(el, pos) {},
+      _findRelativeElement: function _findRelativeElement() {
+        var rel = this._options.relativeToElement;
+        if (!rel) {
+          return null;
+        }
+        return typeof rel === "string" ? this._tryFindElementBySelector(rel) : rel;
+      },
+      _tryFindElementBySelector: function _tryFindElementBySelector(selector) {
+        if (!selector) {
+          return null;
+        }
+        var results = document.querySelectorAll(selector);
+        if (results.length === 0) {
+          warn("unable to find any element with selector '" + selector + "'");
+        } else if (results.length > 0) {
+          warn("multiple elements matched by selector '" + selector + "' (first will be used)");
+        }
+        return results[0];
       },
       moveTo: function moveTo(left, top, width, height) {
         if (left !== undefined && left !== null) {
@@ -724,6 +838,9 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
       },
       _setDialogContentSizing: function _setDialogContentSizing() {}
     };
+
+    ToolWindow.positions = positions;
+    ToolWindow.positionRelations = positionRelations;
 
     module.exports = {
       ToolWindow: ToolWindow

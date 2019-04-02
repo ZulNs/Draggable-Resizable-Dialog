@@ -12,19 +12,48 @@
     <meta name="copyright" content="ZulNs">
     <!--link rel="icon" href="favicon.ico" type="image/x-icon" /-->
     <!--link rel="icon" href="favicon.png" type="image/png" /-->
+    <style type="text/css">
+        div.container {
+            width: 50vw;
+            height: 50vh;
+            position: absolute;
+            top: 200px;
+            left: 25vw;
+            border: 2px solid dodgerblue;
+        }
+    </style>
+    <link rel="stylesheet" href="../dist/toolwindow.css"/>
+    <script type="text/javascript" src="../dist/toolwindow.js"></script>
 </head>
-<body>
+<body onload="ready()">
 <!-- HTML here... -->
 <p>
-    <button onclick="showIframeDialog();">Show IFRAME Dialog</button>
-    <button onclick="showTextDialog();">Show TEXT Dialog</button>
-    <button onclick="showHtmlDialog();">Show HTML Dialog</button>
-    <button onclick="showHtmlDialogAsync();">Show HTML Dialog (async)</button>
-    <button onclick="showDialogWithNoButtons();">Show Dialog with NO buttons</button>
-    <button onclick="showRefreshingDialog();">Show Refreshing Dialog</button>
+    <button onclick="show('iframe');">Show IFRAME Dialog</button>
+    <button onclick="show('text');">Show TEXT Dialog</button>
+    <button onclick="show('html');">Show HTML Dialog</button>
+    <button onclick="show('async');">Show HTML Dialog (async)</button>
+    <button onclick="show('nobuttons');">Show Dialog with NO buttons</button>
+    <button onclick="show('refreshing');">Show Refreshing Dialog</button>
 </p>
-<link rel="stylesheet" href="../dist/toolwindow.css"/>
-<script type="text/javascript" src="../dist/toolwindow.js"></script>
+<fieldset>
+    <legend>Options</legend>
+    <div>
+        <label for="position">Position (relative to blue container)</label>
+        <select id="position">
+        </select>
+    </div>
+    <div>
+        <label for="relativePosition">Inside or outside?</label>
+        <select id="relativePosition">
+        </select>
+    </div>
+    <div>
+        <input id="reuse" type="checkbox"/>
+        <label for="reuse">Re-use existing dialogs (will keep their last position)</label>
+    </div>
+
+</fieldset>
+<div class="container" id="container"></div>
 <script type="text/javascript">
   var
     refreshingDialog,
@@ -36,166 +65,205 @@
     asyncCount = 0,
     bacon = "Bacon ipsum dolor amet hamburger bacon pork turkey pig, short ribs burgdoggen chicken doner pork belly meatball. Jerky pork loin buffalo, ground round short loin corned beef bresaola burgdoggen turkey. Beef sausage porchetta, drumstick buffalo jerky meatloaf. Drumstick prosciutto chuck swine. Shankle porchetta tri-tip cupim biltong beef ribs cow picanha corned beef pork chop tongue doner meatball ribeye. Picanha buffalo flank, ribeye turkey pastrami chuck. Bacon ipsum dolor amet hamburger bacon pork turkey pig, short ribs burgdoggen chicken doner pork belly meatball. Jerky pork loin buffalo, ground round short loin corned beef bresaola burgdoggen turkey. Beef sausage porchetta, drumstick buffalo jerky meatloaf. Drumstick prosciutto chuck swine. Shankle porchetta tri-tip cupim biltong beef ribs cow picanha corned beef pork chop tongue doner meatball ribeye. Picanha buffalo flank, ribeye turkey pastrami chuck.";
 
-  function showRefreshingDialog() {
-    refreshingDialog = refreshingDialog || new ToolWindow({
-      title: "Refreshing window",
-      content: {
-        type: "text",
-        value: () => "Counter is: "
-      },
-      buttons: [{
-        text: "Increment counter",
-        clicked: function() {
-          // note that
-          if (this.__counter === undefined) {
-            this.__counter = 0;
-          }
-          this.__counter++;
-          this.content.value = "Counter is: " + this.__counter;
+  function setOptions(sel, options, selected) {
+    Array.from(sel.children).forEach(el => sel.remove(el));
+    options.forEach(value => {
+      var opt = document.createElement("option");
+      opt.value = value;
+      opt.innerText = value;
+      if (selected === value) {
+        opt.selected = true;
+      }
+      sel.appendChild(opt);
+    });
+  }
+
+  function populatePositions() {
+    var sel = document.querySelector("select#position");
+    setOptions(sel, Object.keys(ToolWindow.positions), "center");
+  }
+
+  function populateRelativity() {
+    var sel = document.querySelector("select#relativePosition");
+    setOptions(sel, Object.keys(ToolWindow.positionRelations));
+  }
+
+  function ready() {
+    populatePositions();
+    populateRelativity();
+  }
+
+  var refreshingConfig = {
+    title: "Refreshing window",
+    content: {
+      type: "text",
+      value: () => "Counter is: "
+    },
+    buttons: [{
+      text: "Increment counter",
+      clicked: function () {
+        // note that
+        if (this.__counter === undefined) {
+          this.__counter = 0;
+        }
+        this.__counter++;
+        this.content.value = "Counter is: " + this.__counter;
+        this.refresh();
+      }
+    }, {
+      text: "Get a face",
+      clicked: function () {
+        this.content = {
+          type: "url",
+          value: "http://thispersondoesnotexist.com"
+        };
+        this.refresh();
+      }
+    }]
+  };
+
+  var noButtonsConfig = {
+    title: "Look, Ma! No Buttons!",
+    left: 250,
+    top: 400,
+    minWidth: 400,
+    minHeight: 100,
+    content: {
+      type: "text",
+      value: bacon
+    },
+    buttons: []
+  };
+
+  var iframeConfig = {
+    title: "Demo Tool Window",
+    left: 50,
+    top: 100,
+    minWidth: 640,
+    minHeight: 480,
+    content: {
+      type: "url",
+      value: "https://localhost:44303/#/app"
+    },
+    buttons: [
+      {
+        text: "Refresh",
+        clicked: function () {
           this.refresh();
         }
-      }, {
-        text: "Get a face",
-        clicked: function() {
-          this.content = {
-            type: "url",
-            value: "http://thispersondoesnotexist.com"
-          };
-          this.refresh();
-        }
-      }]
-    });
-    refreshingDialog.show();
-  }
-
-  function showDialogWithNoButtons() {
-    noButtonsDialog = noButtonsDialog || new ToolWindow({
-      title: "Look, Ma! No Buttons!",
-      left: 250,
-      top: 400,
-      minWidth: 400,
-      minHeight: 100,
-      content: {
-        type: "text",
-        value: bacon
       },
-      buttons: []
-    });
-    noButtonsDialog.show();
-  }
-
-  function showIframeDialog() {
-    iframeDialog = iframeDialog || new ToolWindow({
-      title: "Demo Tool Window",
-      left: 50,
-      top: 100,
-      minWidth: 640,
-      minHeight: 480,
-      content: {
-        type: "url",
-        value: "https://localhost:44303/#/app"
-      },
-      buttons: [
-        {
-          text: "Refresh",
-          clicked: function () {
-            this.refresh();
-          }
-        },
-        {
-          text: "Dismiss",
-          clicked: function () {
-            this.hide()
-          }
+      {
+        text: "Dismiss",
+        clicked: function () {
+          this.hide()
         }
-      ],
-    });
-    iframeDialog.show();
-  }
+      }
+    ],
+  };
 
-  function showTextDialog() {
-    textDialog = textDialog || new ToolWindow({
-      title: "Demo Tool Window",
-      top: 200,
-      left: 150,
-      content: {
-        type: "text",
-        value: bacon
-      },
-    });
-    textDialog.show();
-  }
+  var textConfig = {
+    title: "Demo Tool Window",
+    top: 200,
+    left: 150,
+    content: {
+      type: "text",
+      value: bacon
+    },
+  };
 
-  function showHtmlDialog() {
-    htmlDialog = htmlDialog || new ToolWindow({
-      title: "Demo Tool Window",
-      buttons: [
-        {
-          text: "Do stuff",
-          clicked: function (evt) {
-            alert("clicked! See console log for event and context info.");
-            console.log({
-              context: this,
-              evt
-            });
-          }
-        },
-        {
-          text: "Dismiss",
-          clicked: function () {
-            this.hide();
-          }
-        }
-      ],
-      top: 300,
-      left: 350,
-      content: {
-        type: "html",
-        value: "<html lang=\"en\"><head><title></title></title></head><body><h2>HTML Content!</h2><p>" + bacon + "</p></body></html>"
-      },
-    });
-    htmlDialog.show();
-  }
-
-  function showHtmlDialogAsync() {
-    htmlDialogAsync = htmlDialogAsync || new ToolWindow({
-      title: "Demo Tool Window",
-      buttons: [
-        {
-          text: "Do stuff",
-          clicked: function (evt) {
-            alert("clicked! See console log for event and context info.");
-            console.log({
-              context: this,
-              evt
-            });
-          }
-        },
-        {
-          text: "Refresh",
-          clicked: function () {
-            this.refresh();
-          }
-        },
-        {
-          text: "Dismiss",
-          clicked: function () {
-            this.hide();
-          }
-        }
-      ],
-      top: 300,
-      left: 350,
-      content: {
-        type: "html",
-        value: function () {
-          return new Promise(function (resolve) {
-            resolve("<html lang=\"en\"><head><title></title></title></head><body><h2>HTML Content [ refreshed: " + (++asyncCount) + " time" + (asyncCount === 1 ? "" : "s") + "]!</h2><p>" + bacon + "</p></body></html>");
+  var htmlConfig = {
+    title: "Demo Tool Window",
+    buttons: [
+      {
+        text: "Do stuff",
+        clicked: function (evt) {
+          alert("clicked! See console log for event and context info.");
+          console.log({
+            context: this,
+            evt
           });
         }
       },
-    });
-    htmlDialogAsync.show();
+      {
+        text: "Dismiss",
+        clicked: function () {
+          this.hide();
+        }
+      }
+    ],
+    top: 300,
+    left: 350,
+    content: {
+      type: "html",
+      value: "<html lang=\"en\"><head><title></title></title></head><body><h2>HTML Content!</h2><p>" + bacon + "</p></body></html>"
+    },
+    position: document.querySelector("#position").value,
+    relativeToElement: ".container"
+  };
+
+  var asyncConfig = {
+    title: "Demo Tool Window",
+    buttons: [
+      {
+        text: "Do stuff",
+        clicked: function (evt) {
+          alert("clicked! See console log for event and context info.");
+          console.log({
+            context: this,
+            evt
+          });
+        }
+      },
+      {
+        text: "Refresh",
+        clicked: function () {
+          this.refresh();
+        }
+      },
+      {
+        text: "Dismiss",
+        clicked: function () {
+          this.hide();
+        }
+      }
+    ],
+    top: 300,
+    left: 350,
+    content: {
+      type: "html",
+      value: function () {
+        return new Promise(function (resolve) {
+          resolve("<html lang=\"en\"><head><title></title></title></head><body><h2>HTML Content [ refreshed: " + (++asyncCount) + " time" + (asyncCount === 1 ? "" : "s") + "]!</h2><p>" + bacon + "</p></body></html>");
+        });
+      }
+    },
+  };
+
+  var configurations = {
+    "refreshing": refreshingConfig,
+    "async": asyncConfig,
+    "html": htmlConfig,
+    "text": textConfig,
+    "iframe": iframeConfig,
+    "nobuttons": noButtonsConfig
+  };
+
+  var dialogs = {};
+
+  function show(which) {
+    var
+      reuse = document.querySelector("input#reuse").checked,
+      position = document.querySelector("select#position").value,
+      relativePosition = document.querySelector("select#relativePosition").value,
+      options = Object.assign({}, configurations[which], {
+        position: position,
+        relativeToElement: "#container",
+        relativePosition: relativePosition
+      });
+    if (!dialogs[which] || !reuse) {
+      dialogs[which] = new ToolWindow(options);
+    }
+    dialogs[which].show();
   }
 
 

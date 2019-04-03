@@ -21,7 +21,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 })()({ 1: [function (require, module, exports) {
     window.ToolWindow = require("./lib/toolwindow").ToolWindow;
   }, { "./lib/toolwindow": 2 }], 2: [function (require, module, exports) {
-    var _insidePositioners;
+    var _outsidePositioners, _insidePositioners;
 
     /*
      * Pure JavaScript for Draggable and Risizable Dialog Box
@@ -80,11 +80,13 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       bottomRight: "bottomRight"
     };
 
-    var insidePositioners = (_insidePositioners = {}, _defineProperty(_insidePositioners, positions.center, function (tw, insideRect, dialogRect) {
-      var left = insideRect.left + (insideRect.width - dialogRect.width) / 2,
-          top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
+    var outsidePositioners = (_outsidePositioners = {}, _defineProperty(_outsidePositioners, positions.topLeft, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.left - dialogRect.width,
+          top = outsideRect.top - dialogRect.height;
       return tw.moveTo(left, top);
-    }), _defineProperty(_insidePositioners, positions.topLeft, function (tw, insideRect) {
+    }), _defineProperty(_outsidePositioners, positions.topCenter, function () {}), _outsidePositioners);
+
+    var insidePositioners = (_insidePositioners = {}, _defineProperty(_insidePositioners, positions.topLeft, function (tw, insideRect) {
       return tw.moveTo(insideRect.left, insideRect.top);
     }), _defineProperty(_insidePositioners, positions.topCenter, function (tw, insideRect, dialogRect) {
       var left = insideRect.left + (insideRect.width - dialogRect.width) / 2;
@@ -95,6 +97,10 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     }), _defineProperty(_insidePositioners, positions.centerLeft, function (tw, insideRect, dialogRect) {
       var top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
       return tw.moveTo(insideRect.left, top);
+    }), _defineProperty(_insidePositioners, positions.center, function (tw, insideRect, dialogRect) {
+      var left = insideRect.left + (insideRect.width - dialogRect.width) / 2,
+          top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
+      return tw.moveTo(left, top);
     }), _defineProperty(_insidePositioners, positions.centerRight, function (tw, insideRect, dialogRect) {
       var left = insideRect.left + insideRect.width - dialogRect.width,
           top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
@@ -293,15 +299,20 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         }
       },
       positionInside: function positionInside(el, pos) {
+        this._positionWith(el, pos, insidePositioners);
+      },
+      positionOutside: function positionOutside(el, pos) {
+        this._positionWith(el, pos, outsidePositioners);
+      },
+      _positionWith: function _positionWith(el, pos, positioners) {
         var insideRect = el.getBoundingClientRect(),
             dialogRect = this._dialog.getBoundingClientRect();
-        var positioner = insidePositioners[pos];
+        var positioner = positioners[pos];
         if (!positioner) {
-          return console.error("position not understood: " + (pos || "nuffin!"));
+          return console.error("position not understood: " + (pos || "(not set)"));
         }
         positioner(this, insideRect, dialogRect);
       },
-      positionOutside: function positionOutside(el, pos) {},
       _findRelativeElement: function _findRelativeElement() {
         var rel = this._options.relativeToElement;
         if (!rel) {

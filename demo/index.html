@@ -14,11 +14,7 @@
     <!--link rel="icon" href="favicon.png" type="image/png" /-->
     <style type="text/css">
         div.container {
-            width: 50vw;
-            height: 50vh;
             position: absolute;
-            top: 200px;
-            left: 25vw;
             border: 2px solid dodgerblue;
         }
     </style>
@@ -53,7 +49,7 @@
     </div>
 
 </fieldset>
-<div class="container" id="container"></div>
+<div class="container" id="container" style="width: 50vw; height: 50vw; top: 30vh; left: 25vw;"></div>
 <script type="text/javascript">
   var
     refreshingDialog,
@@ -92,9 +88,36 @@
     setOptions(sel, Object.keys(ToolWindow.positionRelations));
   }
 
+  function resizeContainerOnInOutChange() {
+    var sel = document.querySelector("select#relativePosition");
+    sel.addEventListener("change", () => {
+      if (!sel.value) {
+        return;
+      }
+      var style = document.querySelector("div#container").style;
+      switch(sel.value) {
+        case "inside":
+          style.height = "50vh";
+          style.width = "50vw";
+          style.left = "25vw";
+          style.top = "25vh";
+          break;
+        case "outside":
+          style.height = "10vh";
+          style.width = "10vw";
+          style.left = "45vw";
+          style.top = "45vh";
+          break;
+        default:
+          console.error("unknown relative position:", sel.value);
+      }
+    });
+  }
+
   function ready() {
     populatePositions();
     populateRelativity();
+    resizeContainerOnInOutChange();
   }
 
   var refreshingConfig = {

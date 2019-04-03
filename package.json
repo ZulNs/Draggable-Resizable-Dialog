@@ -11,8 +11,7 @@
   ],
   "main": "index.js",
   "scripts": {
-    "build": "run-s browserify transpile minify notify",
-    "notify": "",
+    "build": "run-s browserify transpile minify",
     "launch": "opn demo/index.html",
     "prestart": "run-s build",
     "start": "run-p autobuild launch",
@@ -33,7 +32,6 @@
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
     "browserify": "^16.2.3",
-    "node-notifier-cli": "^1.1.2",
     "nodemon": "^1.18.9",
     "npm-run-all": "^4.1.5",
     "opn-cli": "^4.0.0",

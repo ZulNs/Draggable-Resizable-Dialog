@@ -90,20 +90,20 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       var left = insideRect.left + (insideRect.width - dialogRect.width) / 2;
       return tw.moveTo(left, insideRect.top);
     }), _defineProperty(_insidePositioners, positions.topRight, function (tw, insideRect, dialogRect) {
-      var left = insideRect - dialogRect.width;
+      var left = insideRect.left + insideRect.width - dialogRect.width;
       return tw.moveTo(left, insideRect.top);
     }), _defineProperty(_insidePositioners, positions.centerLeft, function (tw, insideRect, dialogRect) {
-      var top = insideRect.top - (insideRect.height - dialogRect.height) / 2;
+      var top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
       return tw.moveTo(insideRect.left, top);
     }), _defineProperty(_insidePositioners, positions.centerRight, function (tw, insideRect, dialogRect) {
       var left = insideRect.left + insideRect.width - dialogRect.width,
-          top = insideRect.top - (insideRect.height - dialogRect.height) / 2;
+          top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
       return tw.moveTo(left, top);
     }), _defineProperty(_insidePositioners, positions.bottomLeft, function (tw, insideRect, dialogRect) {
       var top = insideRect.top + insideRect.height - dialogRect.height;
       return tw.moveTo(insideRect.left, top);
     }), _defineProperty(_insidePositioners, positions.bottomCenter, function (tw, insideRect, dialogRect) {
-      var left = insideRect.left + (insideRect.width - dialogRect.width / 2),
+      var left = insideRect.left + (insideRect.width - dialogRect.width) / 2,
           top = insideRect.top + insideRect.height - dialogRect.height;
       return tw.moveTo(left, top);
     }), _defineProperty(_insidePositioners, positions.bottomRight, function (tw, insideRect, dialogRect) {

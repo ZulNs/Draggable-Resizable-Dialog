@@ -18,7 +18,8 @@
     "browserify": "browserify browser.js -o dist/toolwindow.js",
     "transpile": "babel --presets es2015 dist/toolwindow.js -o dist/toolwindow.js",
     "minify": "uglifyjs --compress --mangle -o dist/toolwindow.min.js -- dist/toolwindow.js",
-    "autobuild": "nodemon -w lib -x \"run-s build\"",
+    "autobuild": "nodemon -w lib -x \"run-s build notify\"",
+    "notify": "node notify-built.js",
     "release": "unleash -p --no-publish",
     "postrelease": "echo unleash doesn't handle 2FA, so please run 'npm publish' now"
   },
@@ -32,6 +33,7 @@
     "babel-cli": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
     "browserify": "^16.2.3",
+    "node-notifier": "^5.4.0",
     "nodemon": "^1.18.9",
     "npm-run-all": "^4.1.5",
     "opn-cli": "^4.0.0",

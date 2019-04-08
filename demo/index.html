@@ -24,9 +24,9 @@
 <body onload="ready()">
 <!-- HTML here... -->
 <p>
-    <button onclick="show('iframe');">Show IFRAME Dialog</button>
     <button onclick="show('text');">Show TEXT Dialog</button>
     <button onclick="show('html');">Show HTML Dialog</button>
+    <button onclick="show('iframe');">Show IFRAME Dialog</button>
     <button onclick="show('async');">Show HTML Dialog (async)</button>
     <button onclick="show('nobuttons');">Show Dialog with NO buttons</button>
     <button onclick="show('refreshing');">Show Refreshing Dialog</button>
@@ -39,8 +39,8 @@
         </select>
     </div>
     <div>
-        <label for="relativePosition">Inside or outside?</label>
-        <select id="relativePosition">
+        <label for="align">Inside or outside?</label>
+        <select id="align">
         </select>
     </div>
     <div>
@@ -84,40 +84,47 @@
   }
 
   function populateRelativity() {
-    var sel = document.querySelector("select#relativePosition");
-    setOptions(sel, Object.keys(ToolWindow.positionRelations));
+    var sel = document.querySelector("select#align");
+    setOptions(sel, Object.keys(ToolWindow.alignments));
   }
 
   function resizeContainerOnInOutChange() {
-    var sel = document.querySelector("select#relativePosition");
+    var sel = document.querySelector("select#align");
     sel.addEventListener("change", () => {
       if (!sel.value) {
         return;
       }
-      var style = document.querySelector("div#container").style;
-      switch(sel.value) {
-        case "inside":
-          style.height = "50vh";
-          style.width = "50vw";
-          style.left = "25vw";
-          style.top = "25vh";
-          break;
-        case "outside":
-          style.height = "10vh";
-          style.width = "10vw";
-          style.left = "45vw";
-          style.top = "45vh";
-          break;
-        default:
-          console.error("unknown relative position:", sel.value);
-      }
+      resizeContainerForAlignmentChange(sel.value);
     });
+  }
+
+  function resizeContainerForAlignmentChange(align) {
+    var style = document.querySelector("div#container").style;
+    switch(align) {
+      case "inside":
+        style.height = "50vh";
+        style.width = "50vw";
+        style.left = "25vw";
+        style.top = "25vh";
+        break;
+      case "outside":
+      case "edge":
+        style.height = "10vh";
+        style.width = "10vw";
+        style.left = "45vw";
+        style.top = "45vh";
+        break;
+      default:
+        console.error("unknown relative position:", align);
+    }
   }
 
   function ready() {
     populatePositions();
     populateRelativity();
     resizeContainerOnInOutChange();
+    resizeContainerForAlignmentChange(document.querySelector("select#align").value);
+    document.querySelector("button").focus();
   }
 
   var refreshingConfig = {
@@ -281,11 +288,11 @@
     var
       reuse = document.querySelector("input#reuse").checked,
       position = document.querySelector("select#position").value,
-      relativePosition = document.querySelector("select#relativePosition").value,
+      align = document.querySelector("select#align").value,
       options = Object.assign({}, configurations[which], {
         position: position,
         relativeToElement: "#container",
-        relativePosition: relativePosition
+        align: align
       });
     if (!dialogs[which] || !reuse) {
       dialogs[which] = new ToolWindow(options);

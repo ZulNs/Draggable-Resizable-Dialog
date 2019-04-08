@@ -20,16 +20,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   }return r;
 })()({ 1: [function (require, module, exports) {
     window.ToolWindow = require("./lib/toolwindow").ToolWindow;
-  }, { "./lib/toolwindow": 2 }], 2: [function (require, module, exports) {
-    var _outsidePositioners, _insidePositioners;
-
-    /*
-     * Pure JavaScript for Draggable and Risizable Dialog Box
-     *
-     * Originally designed by ZulNs, @Gorontalo, Indonesia, 7 June 2017
-     * Modified to be a re-usable component by Davyd McColl, 2019
-     */
-
+  }, { "./lib/toolwindow": 4 }], 2: [function (require, module, exports) {
     var defaultOptions = {
       title: "Tool Window",
       closeButtonText: "✖",
@@ -56,15 +47,34 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         value: ""
       },
       position: "auto", // can be any of: "auto", "topLeft", "topCenter", "topRight", "centerLeft", "center", "centerRight", "bottomLeft", "bottomCenter", "bottomRight"
-      relativePosition: "inside", // "inside" or "outside"
-      relativeToElement: null
+      align: "inside", // "inside" or "outside"
+      relativeToElement: null,
+      escapeCloses: true,
+      animated: true
     };
 
-    var zIndex = 1000;
-
-    var positionRelations = {
-      inside: "inside",
-      outside: "outside"
+    var alignments = {
+      /**
+       * alignment: inside
+       *   moves to position relative to inside of element, respecting
+       *   provided sizings
+       *   - so top-left would have the top-left corner of the dialog on top of the top-left
+       *     corner of the relative element
+       */
+      inside: "inside", // inside the element
+      /**
+       * alignment: outside
+       *   moves to position relative to the outside the element
+       *   - so top-left is above and to the left of the element
+       */
+      outside: "outside",
+      /**
+       * alignment: edge
+       *   outside the element, but edge-aligned
+       *   - so top-right has the top the dialog in-line with the top of the element and
+       *      the dialog is to the right of the element
+       */
+      edge: "edge"
     };
 
     var positions = {
@@ -80,43 +90,133 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       bottomRight: "bottomRight"
     };
 
-    var outsidePositioners = (_outsidePositioners = {}, _defineProperty(_outsidePositioners, positions.topLeft, function (tw, outsideRect, dialogRect) {
+    module.exports = {
+      defaultOptions: defaultOptions,
+      alignments: alignments,
+      positions: positions
+    };
+  }, {}], 3: [function (require, module, exports) {
+    var _outside, _inside, _edge;
+
+    var _require = require("./config"),
+        positions = _require.positions;
+
+    var outside = (_outside = {}, _defineProperty(_outside, positions.topLeft, function (tw, outsideRect, dialogRect) {
       var left = outsideRect.left - dialogRect.width,
           top = outsideRect.top - dialogRect.height;
       return tw.moveTo(left, top);
-    }), _defineProperty(_outsidePositioners, positions.topCenter, function () {}), _outsidePositioners);
+    }), _defineProperty(_outside, positions.topCenter, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.left + (outsideRect.width - dialogRect.width) / 2,
+          top = outsideRect.top - dialogRect.height;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_outside, positions.topRight, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.right,
+          top = outsideRect.top - dialogRect.height;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_outside, positions.centerLeft, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.left - dialogRect.width,
+          top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_outside, positions.center, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.left - (dialogRect.width - outsideRect.width) / 2,
+          top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_outside, positions.centerRight, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.right,
+          top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2;
+      return tw.moveTo(left, top);
+    }), _outside);
 
-    var insidePositioners = (_insidePositioners = {}, _defineProperty(_insidePositioners, positions.topLeft, function (tw, insideRect) {
+    var inside = (_inside = {}, _defineProperty(_inside, positions.topLeft, function (tw, insideRect) {
       return tw.moveTo(insideRect.left, insideRect.top);
-    }), _defineProperty(_insidePositioners, positions.topCenter, function (tw, insideRect, dialogRect) {
+    }), _defineProperty(_inside, positions.topCenter, function (tw, insideRect, dialogRect) {
       var left = insideRect.left + (insideRect.width - dialogRect.width) / 2;
       return tw.moveTo(left, insideRect.top);
-    }), _defineProperty(_insidePositioners, positions.topRight, function (tw, insideRect, dialogRect) {
+    }), _defineProperty(_inside, positions.topRight, function (tw, insideRect, dialogRect) {
       var left = insideRect.left + insideRect.width - dialogRect.width;
       return tw.moveTo(left, insideRect.top);
-    }), _defineProperty(_insidePositioners, positions.centerLeft, function (tw, insideRect, dialogRect) {
+    }), _defineProperty(_inside, positions.centerLeft, function (tw, insideRect, dialogRect) {
       var top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
       return tw.moveTo(insideRect.left, top);
-    }), _defineProperty(_insidePositioners, positions.center, function (tw, insideRect, dialogRect) {
+    }), _defineProperty(_inside, positions.center, function (tw, insideRect, dialogRect) {
       var left = insideRect.left + (insideRect.width - dialogRect.width) / 2,
           top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
       return tw.moveTo(left, top);
-    }), _defineProperty(_insidePositioners, positions.centerRight, function (tw, insideRect, dialogRect) {
+    }), _defineProperty(_inside, positions.centerRight, function (tw, insideRect, dialogRect) {
       var left = insideRect.left + insideRect.width - dialogRect.width,
           top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
       return tw.moveTo(left, top);
-    }), _defineProperty(_insidePositioners, positions.bottomLeft, function (tw, insideRect, dialogRect) {
+    }), _defineProperty(_inside, positions.bottomLeft, function (tw, insideRect, dialogRect) {
       var top = insideRect.top + insideRect.height - dialogRect.height;
       return tw.moveTo(insideRect.left, top);
-    }), _defineProperty(_insidePositioners, positions.bottomCenter, function (tw, insideRect, dialogRect) {
+    }), _defineProperty(_inside, positions.bottomCenter, function (tw, insideRect, dialogRect) {
       var left = insideRect.left + (insideRect.width - dialogRect.width) / 2,
           top = insideRect.top + insideRect.height - dialogRect.height;
       return tw.moveTo(left, top);
-    }), _defineProperty(_insidePositioners, positions.bottomRight, function (tw, insideRect, dialogRect) {
+    }), _defineProperty(_inside, positions.bottomRight, function (tw, insideRect, dialogRect) {
       var left = insideRect.left + insideRect.width - dialogRect.width,
           top = insideRect.top + insideRect.height - dialogRect.height;
       return tw.moveTo(left, top);
-    }), _insidePositioners);
+    }), _inside);
+
+    var edge = (_edge = {}, _defineProperty(_edge, positions.topLeft, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.left - dialogRect.width;
+      return tw.moveTo(left, outsideRect.top);
+    }), _defineProperty(_edge, positions.topCenter, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.left - (dialogRect.width - outsideRect.width) / 2,
+          top = outsideRect.top - dialogRect.height;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_edge, positions.topRight, function (tw, outsideRect) {
+      var left = outsideRect.left + outsideRect.width,
+          top = outsideRect.top;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_edge, positions.centerLeft, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.left - dialogRect.width,
+          top = outsideRect.top + outsideRect.height / 2;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_edge, positions.center, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.left + (outsideRect.width - dialogRect.width) / 2,
+          top = outsideRect.top + outsideRect.height / 2;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_edge, positions.centerRight, function (tw, outsideRect) {
+      var left = outsideRect.left + outsideRect.width,
+          top = outsideRect.top + outsideRect.height / 2;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_edge, positions.bottomLeft, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.left - dialogRect.width,
+          top = outsideRect.top + outsideRect.height - dialogRect.height;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_edge, positions.bottomCenter, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.left + (outsideRect.width - dialogRect.width) / 2,
+          top = outsideRect.top + outsideRect.height;
+      return tw.moveTo(left, top);
+    }), _defineProperty(_edge, positions.bottomRight, function (tw, outsideRect, dialogRect) {
+      var left = outsideRect.left + outsideRect.width,
+          top = outsideRect.top + outsideRect.height - dialogRect.height;
+      return tw.moveTo(left, top);
+    }), _edge);
+
+    module.exports = {
+      inside: inside,
+      outside: outside,
+      edge: edge
+    };
+  }, { "./config": 2 }], 4: [function (require, module, exports) {
+    /*
+     * Pure JavaScript for Draggable and Risizable Dialog Box
+     *
+     * Originally designed by ZulNs, @Gorontalo, Indonesia, 7 June 2017
+     * Modified to be a re-usable component by Davyd McColl, 2019
+     */
+
+    var _require2 = require("./config"),
+        defaultOptions = _require2.defaultOptions,
+        alignments = _require2.alignments,
+        positions = _require2.positions;
+
+    var positioners = require("./positioners");
+
+    var zIndex = 1000;
 
     function warn() {
       var args = Array.from(arguments);
@@ -135,6 +235,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         zIndex = this._options.minZIndex;
       }
 
+      // TODO: determine auto position?
+
       this._minW = this._options.minWidth;
       this._minH = this._options.minHeight;
       if (this._options.width < this._minW) {
@@ -150,6 +252,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       this._isButton = false;
       this._resizeMode = '';
       this._initialPlacementDone = false;
+      this._raised = false;
 
       this._createDialogStructure();
       this._bindMouseEvents();
@@ -179,6 +282,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       },
 
       show: function show() {
+        var _this = this;
+
         // TODO: optionally determine initial placement from
         //  a provided event object
 
@@ -198,12 +303,33 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           this.fitContent();
         }
         this._shownCount++;
+        window.setTimeout(function () {
+          return _this._raiseDialog();
+        }, 0);
       },
       hide: function hide() {
-        this._dialog.style.display = "none";
+        if (this._options.animated) {
+          this._animateClose();
+        } else {
+          this._dialog.style.display = "none";
+        }
+      },
+      _animateClose: function _animateClose() {
+        var _this2 = this;
+
+        this._dialog.style.opacity = "1";
+        var timer = window.setInterval(function () {
+          var newOpacity = parseFloat(_this2._dialog.style.opacity) - 0.1;
+          if (newOpacity < 0) {
+            _this2._dialog.style.display = "none";
+            _this2._dialog.style.opacity = "1";
+            return window.clearInterval(timer);
+          }
+          _this2._dialog.style.opacity = newOpacity.toString();
+        }, 25);
       },
       refresh: function refresh() {
-        var _this = this;
+        var _this3 = this;
 
         if (!this._options.content) {
           this._setText("No content defined");
@@ -212,13 +338,13 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         switch (this._options.content.type) {
           case "text":
             this._fetchContent(function (result) {
-              return _this._setText(result);
+              return _this3._setText(result);
             });
             break;
           case "html":
           case "text/html":
             this._fetchContent(function (result) {
-              return _this._setHTML(result);
+              return _this3._setHTML(result);
             });
             break;
           case "url":
@@ -245,10 +371,10 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 
       get dimensions() {
-        var _this2 = this;
+        var _this4 = this;
 
         return ["top", "left", "width", "height"].reduce(function (acc, cur) {
-          acc[cur] = parseInt(_this2._dialog.style[cur]);
+          acc[cur] = parseInt(_this4._dialog.style[cur]);
           return acc;
         }, {});
       },
@@ -291,26 +417,23 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         if (!this._relativeElement) {
           return;
         }
-        var relative = this._options.relativePosition || positionRelations.inside;
-        if (relative === positionRelations.inside) {
-          this.positionInside(this._relativeElement, this._options.position);
-        } else {
-          this.positionOutside(this._relativeElement, this._options.position);
+        var alignment = (this._options.align || alignments.inside).toLowerCase(),
+            el = this._relativeElement,
+            pos = this._options.position || "auto";
+
+        this._positionWith(el, pos, alignment);
+      },
+      _positionWith: function _positionWith(el, pos, alignment) {
+        var alignmentPositioners = positioners[alignment];
+        if (!alignmentPositioners) {
+          return console.error("alignment not understood: " + (alignment || "(not set"));
         }
-      },
-      positionInside: function positionInside(el, pos) {
-        this._positionWith(el, pos, insidePositioners);
-      },
-      positionOutside: function positionOutside(el, pos) {
-        this._positionWith(el, pos, outsidePositioners);
-      },
-      _positionWith: function _positionWith(el, pos, positioners) {
+        var positioner = alignmentPositioners[pos];
+        if (!positioner) {
+          return console.error("position / alignment not understood: " + alignment + "/" + (pos || "(not set)"));
+        }
         var insideRect = el.getBoundingClientRect(),
             dialogRect = this._dialog.getBoundingClientRect();
-        var positioner = positioners[pos];
-        if (!positioner) {
-          return console.error("position not understood: " + (pos || "(not set)"));
-        }
         positioner(this, insideRect, dialogRect);
       },
       _findRelativeElement: function _findRelativeElement() {
@@ -429,16 +552,31 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           callback(this._options.content.value);
         }
       },
-
-
       _createDialog: function _createDialog() {
+        var _this5 = this;
+
         this._dialog = this._mkDiv("dialog", document.body);
         this._dialog.style.width = this._px(this._options.width);
         this._dialog.style.height = this._px(this._options.height);
         this._dialog.style.display = 'none';
         this._dialog.style.zIndex = (++zIndex).toString();
+        document.addEventListener("click", function () {
+          _this5._raised = false;
+        });
+        if (this._options.escapeCloses) {
+          this._dialog.addEventListener("click", function (ev) {
+            return _this5._suppressEvent(ev);
+          });
+          document.addEventListener("keydown", function (ev) {
+            if (!_this5._dialog || !_this5._dialog.parentElement) {
+              return;
+            }
+            if (_this5._raised && ev.key === "Escape") {
+              _this5.hide();
+            }
+          });
+        }
       },
-
       _createTitlebar: function _createTitlebar() {
         this._dialogTitle = this._mkDiv("titlebar", this._dialog);
         this._dialogTitle.innerText = this._options.title;
@@ -452,7 +590,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         this._coverContentDuringMoveAndResize = this._options.content.type === "url";
       },
       _createButtonBar: function _createButtonBar() {
-        var _this3 = this;
+        var _this6 = this;
 
         if (this._options.buttons.length === 0) {
           this._dialogContent.classList.add("no-buttons");
@@ -462,15 +600,15 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
         this._buttonBar = this._mkDiv("button-bar", this._dialog);
         this._buttons = this._options.buttons.map(function (def) {
-          var btn = _this3._mkEl("button", "dialog-button", _this3._buttonBar);
+          var btn = _this6._mkEl("button", "dialog-button", _this6._buttonBar);
           btn.innerText = def.text;
           if (def.clicked) {
             btn.addEventListener("click", function (ev) {
               btn.disabled = true;
               var returnState = false;
               try {
-                var result = def.clicked.apply(_this3, ev);
-                if (_this3._looksLikeAPromise(result)) {
+                var result = def.clicked.apply(_this6, ev);
+                if (_this6._looksLikeAPromise(result)) {
                   returnState = true;
                   result.then(function () {
                     btn.disabled = false;
@@ -491,8 +629,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         this._mkDiv(["gripper", "left"], this._dialog);
         this._mkDiv(["gripper", "right"], this._dialog);
       },
-
-
       _createDialogStructure: function _createDialogStructure() {
         this._createDialog();
         this._createTitlebar();
@@ -500,7 +636,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         this._createButtonBar();
         this._createGrippers();
       },
-
       _bindMouseEvents: function _bindMouseEvents() {
         this._setDialogContentSizing();
         this._addEvent(this._dialog, 'mousedown', this._onMouseDown.bind(this));
@@ -509,6 +644,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       },
       _raiseDialog: function _raiseDialog() {
         this._dialog.style.zIndex = (++zIndex).toString();
+        this._raised = true;
       },
       _px: function _px(value) {
         value = (value || "0") + "";
@@ -544,9 +680,13 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           elm['on' + evt] = callback;
         }
       },
-      _returnEvent: function _returnEvent(evt) {
-        if (evt.stopPropagation) evt.stopPropagation();
-        if (evt.preventDefault) evt.preventDefault();else {
+      _suppressEvent: function _suppressEvent(evt) {
+        if (evt.stopPropagation) {
+          evt.stopPropagation();
+        }
+        if (evt.preventDefault) {
+          evt.preventDefault();
+        } else {
           evt.returnValue = false;
           return false;
         }
@@ -582,7 +722,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         if (this._coverContentDuringMoveAndResize) {
           this._createContentCover();
         }
-        return this._returnEvent(evt);
+        return this._suppressEvent(evt);
       },
       _createContentCover: function _createContentCover() {
         if (this._contentCover) {
@@ -815,7 +955,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
             this._resizeMode = '';
           }
         }
-        return this._returnEvent(evt);
+        return this._suppressEvent(evt);
       },
       _onMouseUp: function _onMouseUp(evt) {
         evt = evt || window.event;
@@ -830,7 +970,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           this._isButton = false;
         }
         this._removeContentCover();
-        return this._returnEvent(evt);
+        return this._suppressEvent(evt);
       },
       _getOffset: function _getOffset(elm) {
         var rect = elm.getBoundingClientRect(),
@@ -851,9 +991,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     };
 
     ToolWindow.positions = positions;
-    ToolWindow.positionRelations = positionRelations;
+    ToolWindow.alignments = alignments;
 
     module.exports = {
       ToolWindow: ToolWindow
     };
-  }, {}] }, {}, [1]);
+  }, { "./config": 2, "./positioners": 3 }] }, {}, [1]);

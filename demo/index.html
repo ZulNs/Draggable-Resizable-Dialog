@@ -17,6 +17,10 @@
             position: absolute;
             border: 2px solid dodgerblue;
         }
+        hr {
+            opacity: 0.15;
+            color: dodgerblue;
+        }
     </style>
     <link rel="stylesheet" href="../dist/toolwindow.css"/>
     <script type="text/javascript" src="../dist/toolwindow.js"></script>
@@ -47,9 +51,9 @@
         <input id="reuse" type="checkbox"/>
         <label for="reuse">Re-use existing dialogs (will keep their last position)</label>
     </div>
-
 </fieldset>
 <div class="container" id="container" style="width: 50vw; height: 50vw; top: 30vh; left: 25vw;"></div>
+<div id="bottom-spacer"></div>
 <script type="text/javascript">
   var
     refreshingDialog,
@@ -81,6 +85,12 @@
   function populatePositions() {
     var sel = document.querySelector("select#position");
     setOptions(sel, Object.keys(ToolWindow.positions));
+    var
+      extraValue = "topRight,bottomRight",
+      opt = document.createElement("option");
+    opt.text = extraValue;
+    opt.value = extraValue;
+    sel.appendChild(opt);
   }
 
   function populateRelativity() {
@@ -100,7 +110,7 @@
 
   function resizeContainerForAlignmentChange(align) {
     var style = document.querySelector("div#container").style;
-    switch(align) {
+    switch (align) {
       case "inside":
         style.height = "50vh";
         style.width = "50vw";
@@ -119,12 +129,23 @@
     }
   }
 
+  function padOutBottom() {
+    var parent = document.querySelector("#bottom-spacer");
+    if (!parent) {
+      return;
+    }
+    for (var i = 0; i < 150; i++) {
+      parent.appendChild(document.createElement("hr"));
+    }
+  }
+
   function ready() {
     populatePositions();
     populateRelativity();
     resizeContainerOnInOutChange();
     resizeContainerForAlignmentChange(document.querySelector("select#align").value);
     document.querySelector("button").focus();
+    padOutBottom();
   }
 
   var refreshingConfig = {

@@ -424,17 +424,78 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         this._positionWith(el, pos, alignment);
       },
       _positionWith: function _positionWith(el, pos, alignment) {
-        var alignmentPositioners = positioners[alignment];
-        if (!alignmentPositioners) {
-          return console.error("alignment not understood: " + (alignment || "(not set"));
+        var positions = pos.split(","),
+            alignments = alignment.split(",");
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = alignments[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var thisAlignment = _step.value;
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+              for (var _iterator2 = positions[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                var thisPosition = _step2.value;
+
+                var alignmentPositioners = positioners[thisAlignment];
+                if (!alignmentPositioners) {
+                  return console.error("alignment not understood: " + (thisAlignment || "(not set"));
+                }
+                var positioner = alignmentPositioners[thisPosition];
+                if (!positioner) {
+                  return console.error("position / alignment not understood: " + thisAlignment + "/" + (pos || "(not set)"));
+                }
+                var insideRect = el.getBoundingClientRect(),
+                    dialogRect = this._dialog.getBoundingClientRect();
+                positioner(this, insideRect, dialogRect);
+                if (this._withinView()) {
+                  return;
+                }
+              }
+            } catch (err) {
+              _didIteratorError2 = true;
+              _iteratorError2 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                  _iterator2.return();
+                }
+              } finally {
+                if (_didIteratorError2) {
+                  throw _iteratorError2;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator.return) {
+              _iterator.return();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
         }
-        var positioner = alignmentPositioners[pos];
-        if (!positioner) {
-          return console.error("position / alignment not understood: " + alignment + "/" + (pos || "(not set)"));
-        }
-        var insideRect = el.getBoundingClientRect(),
+      },
+      _withinView: function _withinView() {
+        var docEl = document.documentElement,
+            viewportLeft = docEl.scrollLeft,
+            viewportTop = docEl.scrollTop,
+            viewportWidth = docEl.clientWidth + docEl.scrollLeft,
+            viewportHeight = docEl.clientHeight + docEl.scrollTop,
+            viewportRight = viewportLeft + viewportWidth,
+            viewportBottom = viewportTop + viewportHeight,
             dialogRect = this._dialog.getBoundingClientRect();
-        positioner(this, insideRect, dialogRect);
+        return dialogRect.top >= viewportTop && dialogRect.left >= viewportLeft && dialogRect.right <= viewportRight && dialogRect.bottom >= viewportBottom;
       },
       _findRelativeElement: function _findRelativeElement() {
         var rel = this._options.relativeToElement;

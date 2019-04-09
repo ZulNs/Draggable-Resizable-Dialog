@@ -116,7 +116,7 @@ declare module "toolwindow" {
         /**
          * Element to align relative to, required for position or align to have any effect
          */
-        relativeToElement?: HTMLElement;
+        relativeToElement?: HTMLElement | string;
 
         /**
          * should the Escape key close the dialog when it "has focus"?
@@ -145,7 +145,7 @@ declare module "toolwindow" {
          * Sets an element "within" which the tool window has to stay
          * - when not set, this defaults to the window
          */
-        boundingElement?: HTMLElement
+        boundingElement?: HTMLElement | string
     }
     interface IToolWindowButton {
         /**

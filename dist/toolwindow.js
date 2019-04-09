@@ -50,7 +50,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       align: "inside", // "inside" or "outside"
       relativeToElement: null,
       escapeCloses: true,
-      animated: true
+      animated: true,
+      animationTime: 1000,
+      animationOpacityStep: 0.1
     };
 
     var alignments = {
@@ -287,11 +289,12 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         // TODO: optionally determine initial placement from
         //  a provided event object
 
-        this._dialog.style.display = 'block';
         var autoFocus = this._buttons[this._buttons.length - 1];
         if (autoFocus) {
           autoFocus.focus();
         }
+        this._dialog.style.display = "block";
+        this._dialog.style.opacity = "0";
         if (!this._initialPlacementDone) {
           var left = this._options.left === undefined ? (window.innerWidth - this._options.width) / 2 : this._options.left;
           var top = this._options.top === undefined ? (window.innerHeight - this._options.height) / 2 : this._options.top;
@@ -300,12 +303,24 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         }
         this.refresh();
         if (this._shownCount === 0 && this._options.autoFitContent) {
-          this.fitContent();
+          this.fitContent().then(function () {
+            _this._doShow();
+          });
+        } else {
+          this._doShow();
         }
         this._shownCount++;
         window.setTimeout(function () {
           return _this._raiseDialog();
         }, 0);
+      },
+      _doShow: function _doShow() {
+        if (this._options.animated) {
+          this._animateShow();
+        } else {
+          this._dialog.style.display = "block";
+          this._dialog.style.opacity = "1";
+        }
       },
       hide: function hide() {
         if (this._options.animated) {
@@ -315,18 +330,29 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         }
       },
       _animateClose: function _animateClose() {
+        this._animateOpacity(1, 0);
+      },
+      _animateShow: function _animateShow() {
+        this._animateOpacity(0, 1);
+      },
+      _animateOpacity: function _animateOpacity(from, to) {
         var _this2 = this;
 
-        this._dialog.style.opacity = "1";
+        this._dialog.style.display = "block";
+        this._dialog.style.opacity = from.toString();
+        var mul = from > to ? -1 : 1,
+            final = to === 0 ? "none" : "block",
+            step = mul * (this._options.animationOpacityStep || 0.1),
+            frameTime = (this._options.animationTime || 1000) / 40;
         var timer = window.setInterval(function () {
-          var newOpacity = parseFloat(_this2._dialog.style.opacity) - 0.1;
-          if (newOpacity < 0) {
-            _this2._dialog.style.display = "none";
-            _this2._dialog.style.opacity = "1";
+          var newOpacity = parseFloat(_this2._dialog.style.opacity) + step;
+          if (from > to && newOpacity <= to || to > from && newOpacity >= to) {
+            _this2._dialog.style.display = final;
+            _this2._dialog.style.opacity = to.toString();
             return window.clearInterval(timer);
           }
           _this2._dialog.style.opacity = newOpacity.toString();
-        }, 25);
+        }, frameTime);
       },
       refresh: function refresh() {
         var _this3 = this;
@@ -385,29 +411,31 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           rounds: 0,
           lastDimensions: this.dimensions
         };
-        window.setTimeout(function adjust() {
-          if (ctx.self._shownCount < 2) {
-            ctx.self.moveToConfiguredStartPosition();
-          }
-          var currentDimensions = ctx.self.dimensions;
-          if (ctx.rounds > 0 && currentDimensions.width === ctx.lastDimensions.width && currentDimensions.height === ctx.lastDimensions.height) {
-            // resize may be blocked by max sizing
-            return;
-          }
-          ctx.rounds++;
-          var heightDelta = ctx.self._dialogContent.scrollHeight - ctx.self._dialogContent.clientHeight;
-          if (heightDelta > 0) {
-            var delta = Math.min(heightDelta, 10),
-                half = Math.round(delta / 2);
-            ctx.self.moveTo("-" + half, "-" + half, "+" + delta, "+" + delta);
-          } else if (heightDelta < 0) {
-            var _delta = Math.max(heightDelta, -10),
-                _half = Math.abs(Math.round(_delta / 2));
-            ctx.self.moveTo("-" + _half, "-" + _half, "" + _delta, "" + _delta);
-          }
-          ctx.lastDimensions = currentDimensions;
-          window.setTimeout(adjust, 1);
-        }, 1);
+        return new Promise(function (resolve) {
+          window.setTimeout(function adjust() {
+            if (ctx.self._shownCount < 2) {
+              ctx.self.moveToConfiguredStartPosition();
+            }
+            var currentDimensions = ctx.self.dimensions;
+            if (ctx.rounds > 0 && currentDimensions.width === ctx.lastDimensions.width && currentDimensions.height === ctx.lastDimensions.height) {
+              // resize may be blocked by max sizing
+              return resolve();
+            }
+            ctx.rounds++;
+            var heightDelta = ctx.self._dialogContent.scrollHeight - ctx.self._dialogContent.clientHeight;
+            if (heightDelta > 0) {
+              var delta = Math.min(heightDelta, 10),
+                  half = Math.round(delta / 2);
+              ctx.self.moveTo("-" + half, "-" + half, "+" + delta, "+" + delta);
+            } else if (heightDelta < 0) {
+              var _delta = Math.max(heightDelta, -10),
+                  _half = Math.abs(Math.round(_delta / 2));
+              ctx.self.moveTo("-" + _half, "-" + _half, "" + _delta, "" + _delta);
+            }
+            ctx.lastDimensions = currentDimensions;
+            window.setTimeout(adjust, 1);
+          }, 1);
+        });
       },
       moveToConfiguredStartPosition: function moveToConfiguredStartPosition() {
         if (this._options.position === positions.auto) {

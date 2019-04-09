@@ -62,6 +62,84 @@ declare module "toolwindow" {
          * defines what content is shown in the tool window
          */
         content: IToolWindowContent;
+
+        /**
+         * positioning of the toolwindow, relative to relativeElement (RE)
+         * - auto (default: just puts it on-screen)
+         * - topLeft:
+         *   - inside: top-left corner of tool window is aligned with top-left corner of RE
+         *   - outside: bottom-right corner is aligned with the top-left corner of RE
+         *   - edge: top-right corner is aligned with top-left corner of RE
+         * - topCenter: tool window is centrally-aligned (horizontally) with RE and
+         *   - inside: top edge of TW aligned with top edge of RE
+         *   - outside: bottom edge of TW aligned with bottom edge of RE
+         *   - edge: same as for outside
+         * - topRight:
+         *   - inside: top-right corner of tool window is aligned with top-right corner of RE
+         *   - outside: bottom-left corner is aligned with the top-right corner of RE
+         *   - edge: top-left corner is aligned with top-right corner of RE
+         * - centerLeft: tool window is centrally-aligned (vertically) with RE and
+         *   - inside: left TW edge aligns with left RE edge
+         *   - outside: right TW edge aligns with left RE edge
+         *   - edge: as per outside
+         * - center: tool window is aligned centrally (horizontally and vertically) with respect to RE
+         * - centerRight: tool window is centrally-aligned (vertically) with RE and
+         *   - inside: right TW edge aligns with right RE edge
+         *   - outside: left TW edge aligns with right RE edge
+         *   - edge: as per outside
+         * - bottomLeft:
+         *   - inside: TW bottom-left corner aligns with RE bottom-left corner
+         *   - outside: TW top-right corner aligns with RE bottom-left corner
+         *   - edge: TW bottom-right corner aligns with RE bottom-left corner
+         * - bottomCenter: TW is centrally-aligned (horizontally) and
+         *   - inside: TW bottom edge is aligned with RE bottom edge
+         *   - outside: TW top edge is aligned with RE bottom edge
+         *   - edge: as per outside
+         * - bottomRight: TW left edge is aligned with RE right edge and
+         *   - inside: TW bottom-right corner is aligned with RE bottom-right corner
+         *   - outside: TW top-left corner is aligned with RE bottom-right corner
+         *   - edge: TW bottom-left corner is aligned with RE bottom-right corner
+         *
+         * positioning may be one of the discrete values or a comma-separated (no spaces) list -- the first one
+         *  which results in the tool window being visible on screen is selected
+         */
+        position: "auto" | "topLeft" | "topCenter" | "topRight" | "centerLeft" | "center" | "centerRight" | "bottomLeft" | "bottomCenter" | "bottomRight" | string;
+
+        /**
+         * alignment of tool window relative to relativeElement
+         * - inside: attempts to position the tool window inside RE
+         * - outside: attempts to position tool window outside RE
+         * - edge: attempts to edge-align outside RE
+         */
+        align: "inside" | "outside" | "edge";
+
+        /**
+         * Element to align relative to, required for position or align to have any effect
+         */
+        relativeToElement: HTMLElement;
+
+        /**
+         * should the Escape key close the dialog when it "has focus"?
+         * - defaults to true
+         */
+        escapeCloses: boolean;
+
+        /**
+         * whether or not to animate (fade-in / fade-out) dialog on show/hide
+         */
+        animated: boolean;
+
+        /**
+         * how long fade animations take, if enabled
+         */
+        animationTime: 1000,
+
+        /**
+         * what step to use in opacity with each animation frame
+         * - if you change animationTime, you may need to reduce
+         *   this value to prevent obvious stepping
+         */
+        animationOpacityStep: 0.1
     }
     interface IToolWindowButton {
         /**

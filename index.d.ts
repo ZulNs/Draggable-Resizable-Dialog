@@ -103,7 +103,7 @@ declare module "toolwindow" {
          * positioning may be one of the discrete values or a comma-separated (no spaces) list -- the first one
          *  which results in the tool window being visible on screen is selected
          */
-        position: "auto" | "topLeft" | "topCenter" | "topRight" | "centerLeft" | "center" | "centerRight" | "bottomLeft" | "bottomCenter" | "bottomRight" | string;
+        position?: "auto" | "topLeft" | "topCenter" | "topRight" | "centerLeft" | "center" | "centerRight" | "bottomLeft" | "bottomCenter" | "bottomRight" | string;
 
         /**
          * alignment of tool window relative to relativeElement
@@ -111,35 +111,35 @@ declare module "toolwindow" {
          * - outside: attempts to position tool window outside RE
          * - edge: attempts to edge-align outside RE
          */
-        align: "inside" | "outside" | "edge";
+        align?: "inside" | "outside" | "edge";
 
         /**
          * Element to align relative to, required for position or align to have any effect
          */
-        relativeToElement: HTMLElement;
+        relativeToElement?: HTMLElement;
 
         /**
          * should the Escape key close the dialog when it "has focus"?
          * - defaults to true
          */
-        escapeCloses: boolean;
+        escapeCloses?: boolean;
 
         /**
          * whether or not to animate (fade-in / fade-out) dialog on show/hide
          */
-        animated: boolean;
+        animated?: boolean;
 
         /**
          * how long fade animations take, if enabled
          */
-        animationTime: 1000,
+        animationTime?: 1000,
 
         /**
          * what step to use in opacity with each animation frame
          * - if you change animationTime, you may need to reduce
          *   this value to prevent obvious stepping
          */
-        animationOpacityStep: 0.1
+        animationOpacityStep?: 0.1
     }
     interface IToolWindowButton {
         /**

@@ -139,7 +139,13 @@ declare module "toolwindow" {
          * - if you change animationTime, you may need to reduce
          *   this value to prevent obvious stepping
          */
-        animationOpacityStep?: 0.1
+        animationOpacityStep?: 0.1,
+
+        /**
+         * Sets an element "within" which the tool window has to stay
+         * - when not set, this defaults to the window
+         */
+        boundingElement?: HTMLElement
     }
     interface IToolWindowButton {
         /**

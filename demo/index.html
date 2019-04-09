@@ -17,6 +17,14 @@
             position: absolute;
             border: 2px solid dodgerblue;
         }
+        div#boundBox {
+            position: absolute;
+            border: 2px solid red;
+            left: 5vw;
+            width: 90vw;
+            height: 750px;
+            top: 200px;
+        }
         hr {
             opacity: 0.15;
             color: dodgerblue;
@@ -29,6 +37,7 @@
 <!-- HTML here... -->
 <p>
     <button onclick="show('text');">Show TEXT Dialog</button>
+    <button onclick="show('text-bound');">Show TEXT Dialog (constrained)</button>
     <button onclick="show('html');">Show HTML Dialog</button>
     <button onclick="show('iframe');">Show IFRAME Dialog</button>
     <button onclick="show('async');">Show HTML Dialog (async)</button>
@@ -50,6 +59,10 @@
     <div>
         <input id="reuse" type="checkbox"/>
         <label for="reuse">Re-use existing dialogs (will keep their last position)</label>
+    </div>
+
+    <div id="boundBox">
+
     </div>
 </fieldset>
 <div class="container" id="container" style="width: 50vw; height: 50vw; top: 30vh; left: 25vw;"></div>
@@ -299,6 +312,7 @@
     "async": asyncConfig,
     "html": htmlConfig,
     "text": textConfig,
+    "text-bound": Object.assign({}, textConfig, { boundingElement: "#boundBox" }),
     "iframe": iframeConfig,
     "nobuttons": noButtonsConfig
   };

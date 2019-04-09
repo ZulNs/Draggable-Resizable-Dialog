@@ -52,7 +52,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       escapeCloses: true,
       animated: true,
       animationTime: 1000,
-      animationOpacityStep: 0.1
+      animationOpacityStep: 0.1,
+      boundingElement: null
     };
 
     var alignments = {
@@ -255,6 +256,11 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       this._resizeMode = '';
       this._initialPlacementDone = false;
       this._raised = false;
+      this._handlingMouseEvent = false;
+
+      if (this._options.boundingElement) {
+        this._boundingElement = typeof this._options.boundingElement === "string" ? document.querySelector(this._options.boundingElement) : this._options.boundingElement;
+      }
 
       this._createDialogStructure();
       this._bindMouseEvents();
@@ -399,10 +405,13 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       get dimensions() {
         var _this4 = this;
 
-        return ["top", "left", "width", "height"].reduce(function (acc, cur) {
+        var result = ["top", "left", "width", "height"].reduce(function (acc, cur) {
           acc[cur] = parseInt(_this4._dialog.style[cur]);
           return acc;
         }, {});
+        result.right = result.left + result.width;
+        result.bottom = result.top + result.height;
+        return result;
       },
 
       fitContent: function fitContent() {
@@ -545,6 +554,10 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         return results[0];
       },
       moveTo: function moveTo(left, top, width, height) {
+        this._moveTo(left, top, width, height);
+        this.constrain();
+      },
+      _moveTo: function _moveTo(left, top, width, height) {
         if (left !== undefined && left !== null) {
           left = this._grokRelative(left, this._dialog.style.left);
           if (left < 0) {
@@ -553,42 +566,77 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           left = Math.min(left, window.innerWidth - 5);
           this._dialog.style.left = this._px(left);
         }
-        if (top !== undefined && left !== null) {
+        if (top !== undefined && top !== null) {
           top = this._grokRelative(top, this._dialog.style.top);
           if (top < 0) {
             top = 0;
           }
-          top = Math.min(top, window.innerHeight - 5);
           this._dialog.style.top = this._px(top);
         }
-        this.resizeTo(width, height);
-        this.boundWithinScreen();
+        this._resizeTo(width, height);
       },
-      boundWithinScreen: function boundWithinScreen() {
+
+
+      get boundingRect() {
+        return this._boundingElement ? this._boundingElement.getBoundingClientRect() : this._makeDocumentElementBoundingRect();
+      },
+
+      _makeDocumentElementBoundingRect: function _makeDocumentElementBoundingRect() {
+        var rect = document.documentElement.getBoundingClientRect(),
+            width = rect.width,
+            height = rect.height;
+        if (rect.height > window.innerHeight) {
+          width -= 5; // allow for a scrollbar
+        }
+        return {
+          top: 0,
+          left: 0,
+          width: width,
+          height: height,
+          right: width,
+          bottom: height
+        };
+      },
+      constrain: function constrain() {
         if (!this._options.keepOnScreen) {
           return;
         }
-        var dimensions = this.dimensions;
-        if (dimensions.width > window.innerWidth) {
-          this.resizeTo(window.innerWidth);
+        var dimensions = this.dimensions,
+            boundingRect = this.boundingRect;
+
+        var resizeWidth = null,
+            resizeHeight = null,
+            moveLeft = null,
+            moveTop = null;
+        if (dimensions.width > boundingRect.width) {
+          resizeWidth = boundingRect.width;
         }
-        if (dimensions.height > window.innerHeight) {
-          this.resizeTo(null, window.innerHeight);
+        if (dimensions.height > boundingRect.height) {
+          resizeHeight = boundingRect.height;
         }
-        if (dimensions.left < 0) {
-          this.moveTo(0);
+
+        if (dimensions.left < boundingRect.left) {
+          moveLeft = boundingRect.left;
         }
-        if (dimensions.left + dimensions.width > window.innerWidth) {
-          this.moveTo(window.innerWidth - dimensions.width);
+        if (dimensions.top < boundingRect.top) {
+          moveTop = boundingRect.top;
         }
-        if (dimensions.top < 0) {
-          this.moveTo(0);
+        if (dimensions.right > boundingRect.right) {
+          moveLeft = Math.floor(boundingRect.right) - Math.ceil(dimensions.width);
         }
-        if (dimensions.top + dimensions.height > window.innerHeight) {
-          this.moveTo(null, window.innerHeight - dimensions.height);
+        if (dimensions.bottom > boundingRect.bottom) {
+          // noinspection JSSuspiciousNameCombination
+          moveTop = Math.floor(boundingRect.bottom) - Math.ceil(dimensions.height);
+        }
+        if (resizeWidth !== null || resizeHeight !== null || moveLeft !== null || moveTop !== null) {
+          this._moveTo(moveLeft, moveTop, resizeWidth, resizeHeight);
         }
       },
       resizeTo: function resizeTo(width, height) {
+        this._resizeTo(width, height);
+        this.constrain();
+      },
+      _resizeTo: function _resizeTo(width, height) {
         if (width !== undefined && width !== null) {
           width = this._grokRelative(width, this._dialog.style.width);
           if (width > this._maxW) {
@@ -727,9 +775,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       },
       _bindMouseEvents: function _bindMouseEvents() {
         this._setDialogContentSizing();
-        this._addEvent(this._dialog, 'mousedown', this._onMouseDown.bind(this));
-        this._addEvent(document, 'mousemove', this._onMouseMove.bind(this));
-        this._addEvent(document, 'mouseup', this._onMouseUp.bind(this));
+        this._addEvent(this._dialog, "mousedown", this._onMouseDown.bind(this));
+        this._addEvent(document, "mousemove", this._onMouseMove.bind(this));
+        this._addEvent(document, "mouseup", this._onMouseUp.bind(this));
       },
       _raiseDialog: function _raiseDialog() {
         this._dialog.style.zIndex = (++zIndex).toString();
@@ -1005,6 +1053,9 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       _onMouseMove: function _onMouseMove(evt) {
         evt = evt || window.event;
         if (!evt || !evt.target) {
+          return;
+        }
+        if (this._handlingMouseEvent) {
           return;
         }
         if (this._isDrag) {

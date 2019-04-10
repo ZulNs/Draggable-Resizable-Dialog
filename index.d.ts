@@ -69,36 +69,36 @@ declare module "toolwindow" {
          * - topLeft:
          *   - inside: top-left corner of tool window is aligned with top-left corner of RE
          *   - outside: bottom-right corner is aligned with the top-left corner of RE
-         *   - edge: top-right corner is aligned with top-left corner of RE
+         *   - horizontalEdge: top-right corner is aligned with top-left corner of RE
          * - topCenter: tool window is centrally-aligned (horizontally) with RE and
-         *   - inside: top edge of TW aligned with top edge of RE
-         *   - outside: bottom edge of TW aligned with bottom edge of RE
-         *   - edge: same as for outside
+         *   - inside: top horizontalEdge of TW aligned with top horizontalEdge of RE
+         *   - outside: bottom horizontalEdge of TW aligned with bottom horizontalEdge of RE
+         *   - horizontalEdge: same as for outside
          * - topRight:
          *   - inside: top-right corner of tool window is aligned with top-right corner of RE
          *   - outside: bottom-left corner is aligned with the top-right corner of RE
-         *   - edge: top-left corner is aligned with top-right corner of RE
+         *   - horizontalEdge: top-left corner is aligned with top-right corner of RE
          * - centerLeft: tool window is centrally-aligned (vertically) with RE and
-         *   - inside: left TW edge aligns with left RE edge
-         *   - outside: right TW edge aligns with left RE edge
-         *   - edge: as per outside
+         *   - inside: left TW horizontalEdge aligns with left RE horizontalEdge
+         *   - outside: right TW horizontalEdge aligns with left RE horizontalEdge
+         *   - horizontalEdge: as per outside
          * - center: tool window is aligned centrally (horizontally and vertically) with respect to RE
          * - centerRight: tool window is centrally-aligned (vertically) with RE and
-         *   - inside: right TW edge aligns with right RE edge
-         *   - outside: left TW edge aligns with right RE edge
-         *   - edge: as per outside
+         *   - inside: right TW horizontalEdge aligns with right RE horizontalEdge
+         *   - outside: left TW horizontalEdge aligns with right RE horizontalEdge
+         *   - horizontalEdge: as per outside
          * - bottomLeft:
          *   - inside: TW bottom-left corner aligns with RE bottom-left corner
          *   - outside: TW top-right corner aligns with RE bottom-left corner
-         *   - edge: TW bottom-right corner aligns with RE bottom-left corner
+         *   - horizontalEdge: TW bottom-right corner aligns with RE bottom-left corner
          * - bottomCenter: TW is centrally-aligned (horizontally) and
-         *   - inside: TW bottom edge is aligned with RE bottom edge
-         *   - outside: TW top edge is aligned with RE bottom edge
-         *   - edge: as per outside
-         * - bottomRight: TW left edge is aligned with RE right edge and
+         *   - inside: TW bottom horizontalEdge is aligned with RE bottom horizontalEdge
+         *   - outside: TW top horizontalEdge is aligned with RE bottom horizontalEdge
+         *   - horizontalEdge: as per outside
+         * - bottomRight: TW left horizontalEdge is aligned with RE right horizontalEdge and
          *   - inside: TW bottom-right corner is aligned with RE bottom-right corner
          *   - outside: TW top-left corner is aligned with RE bottom-right corner
-         *   - edge: TW bottom-left corner is aligned with RE bottom-right corner
+         *   - horizontalEdge: TW bottom-left corner is aligned with RE bottom-right corner
          *
          * positioning may be one of the discrete values or a comma-separated (no spaces) list -- the first one
          *  which results in the tool window being visible on screen is selected
@@ -109,9 +109,9 @@ declare module "toolwindow" {
          * alignment of tool window relative to relativeElement
          * - inside: attempts to position the tool window inside RE
          * - outside: attempts to position tool window outside RE
-         * - edge: attempts to edge-align outside RE
+         * - horizontalEdge: attempts to horizontalEdge-align outside RE
          */
-        align?: "inside" | "outside" | "edge";
+        align?: "inside" | "outside" | "horizontalEdge";
 
         /**
          * Element to align relative to, required for position or align to have any effect

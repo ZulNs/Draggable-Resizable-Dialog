@@ -46,8 +46,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         type: "text",
         value: ""
       },
-      position: "auto", // can be any of: "auto", "topLeft", "topCenter", "topRight", "centerLeft", "center", "centerRight", "bottomLeft", "bottomCenter", "bottomRight"
-      align: "inside", // "inside" or "outside"
+      placement: null, // can be any combination of postion,align|position,align
       relativeToElement: null,
       escapeCloses: true,
       animated: true,
@@ -72,12 +71,19 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
        */
       outside: "outside",
       /**
-       * alignment: edge
-       *   outside the element, but edge-aligned
+       * alignment: horizontalEdge
+       *   outside the element, but horizontally horizontalEdge-aligned
        *   - so top-right has the top the dialog in-line with the top of the element and
        *      the dialog is to the right of the element
        */
-      edge: "edge"
+      horizontalEdge: "horizontalEdge",
+      /**
+       * alignment: horizontalEdge
+       *   outside the element, but vertically horizontalEdge-aligned
+       *   - so top-right has the top the dialog in-line with the top of the element and
+       *      the dialog is to the right of the element
+       */
+      verticalEdge: "verticalEdge"
     };
 
     var positions = {
@@ -99,110 +105,144 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       positions: positions
     };
   }, {}], 3: [function (require, module, exports) {
-    var _outside, _inside, _edge;
+    var _outside, _inside, _horizontalEdge, _verticalEdge;
 
     var _require = require("./config"),
         positions = _require.positions;
 
-    var outside = (_outside = {}, _defineProperty(_outside, positions.topLeft, function (tw, outsideRect, dialogRect) {
+    var outside = (_outside = {}, _defineProperty(_outside, positions.topLeft, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.left - dialogRect.width,
           top = outsideRect.top - dialogRect.height;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_outside, positions.topCenter, function (tw, outsideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_outside, positions.topCenter, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.left + (outsideRect.width - dialogRect.width) / 2,
           top = outsideRect.top - dialogRect.height;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_outside, positions.topRight, function (tw, outsideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_outside, positions.topRight, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.right,
           top = outsideRect.top - dialogRect.height;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_outside, positions.centerLeft, function (tw, outsideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_outside, positions.centerLeft, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.left - dialogRect.width,
           top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_outside, positions.center, function (tw, outsideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_outside, positions.center, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.left - (dialogRect.width - outsideRect.width) / 2,
           top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_outside, positions.centerRight, function (tw, outsideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_outside, positions.centerRight, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.right,
           top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2;
-      return tw.moveTo(left, top);
+      return moveFn(left, top);
     }), _outside);
 
-    var inside = (_inside = {}, _defineProperty(_inside, positions.topLeft, function (tw, insideRect) {
-      return tw.moveTo(insideRect.left, insideRect.top);
-    }), _defineProperty(_inside, positions.topCenter, function (tw, insideRect, dialogRect) {
+    var inside = (_inside = {}, _defineProperty(_inside, positions.topLeft, function (moveFn, insideRect) {
+      return moveFn(insideRect.left, insideRect.top);
+    }), _defineProperty(_inside, positions.topCenter, function (moveFn, insideRect, dialogRect) {
       var left = insideRect.left + (insideRect.width - dialogRect.width) / 2;
-      return tw.moveTo(left, insideRect.top);
-    }), _defineProperty(_inside, positions.topRight, function (tw, insideRect, dialogRect) {
+      return moveFn(left, insideRect.top);
+    }), _defineProperty(_inside, positions.topRight, function (moveFn, insideRect, dialogRect) {
       var left = insideRect.left + insideRect.width - dialogRect.width;
-      return tw.moveTo(left, insideRect.top);
-    }), _defineProperty(_inside, positions.centerLeft, function (tw, insideRect, dialogRect) {
+      return moveFn(left, insideRect.top);
+    }), _defineProperty(_inside, positions.centerLeft, function (moveFn, insideRect, dialogRect) {
       var top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
-      return tw.moveTo(insideRect.left, top);
-    }), _defineProperty(_inside, positions.center, function (tw, insideRect, dialogRect) {
+      return moveFn(insideRect.left, top);
+    }), _defineProperty(_inside, positions.center, function (moveFn, insideRect, dialogRect) {
       var left = insideRect.left + (insideRect.width - dialogRect.width) / 2,
           top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_inside, positions.centerRight, function (tw, insideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_inside, positions.centerRight, function (moveFn, insideRect, dialogRect) {
       var left = insideRect.left + insideRect.width - dialogRect.width,
           top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_inside, positions.bottomLeft, function (tw, insideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_inside, positions.bottomLeft, function (moveFn, insideRect, dialogRect) {
       var top = insideRect.top + insideRect.height - dialogRect.height;
-      return tw.moveTo(insideRect.left, top);
-    }), _defineProperty(_inside, positions.bottomCenter, function (tw, insideRect, dialogRect) {
+      return moveFn(insideRect.left, top);
+    }), _defineProperty(_inside, positions.bottomCenter, function (moveFn, insideRect, dialogRect) {
       var left = insideRect.left + (insideRect.width - dialogRect.width) / 2,
           top = insideRect.top + insideRect.height - dialogRect.height;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_inside, positions.bottomRight, function (tw, insideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_inside, positions.bottomRight, function (moveFn, insideRect, dialogRect) {
       var left = insideRect.left + insideRect.width - dialogRect.width,
           top = insideRect.top + insideRect.height - dialogRect.height;
-      return tw.moveTo(left, top);
+      return moveFn(left, top);
     }), _inside);
 
-    var edge = (_edge = {}, _defineProperty(_edge, positions.topLeft, function (tw, outsideRect, dialogRect) {
+    var horizontalEdge = (_horizontalEdge = {}, _defineProperty(_horizontalEdge, positions.topLeft, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.left - dialogRect.width;
-      return tw.moveTo(left, outsideRect.top);
-    }), _defineProperty(_edge, positions.topCenter, function (tw, outsideRect, dialogRect) {
+      return moveFn(left, outsideRect.top);
+    }), _defineProperty(_horizontalEdge, positions.topCenter, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.left - (dialogRect.width - outsideRect.width) / 2,
           top = outsideRect.top - dialogRect.height;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_edge, positions.topRight, function (tw, outsideRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_horizontalEdge, positions.topRight, function (moveFn, outsideRect) {
       var left = outsideRect.left + outsideRect.width,
           top = outsideRect.top;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_edge, positions.centerLeft, function (tw, outsideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_horizontalEdge, positions.centerLeft, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.left - dialogRect.width,
           top = outsideRect.top + outsideRect.height / 2;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_edge, positions.center, function (tw, outsideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_horizontalEdge, positions.center, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.left + (outsideRect.width - dialogRect.width) / 2,
           top = outsideRect.top + outsideRect.height / 2;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_edge, positions.centerRight, function (tw, outsideRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_horizontalEdge, positions.centerRight, function (moveFn, outsideRect) {
       var left = outsideRect.left + outsideRect.width,
           top = outsideRect.top + outsideRect.height / 2;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_edge, positions.bottomLeft, function (tw, outsideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_horizontalEdge, positions.bottomLeft, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.left - dialogRect.width,
           top = outsideRect.top + outsideRect.height - dialogRect.height;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_edge, positions.bottomCenter, function (tw, outsideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_horizontalEdge, positions.bottomCenter, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.left + (outsideRect.width - dialogRect.width) / 2,
           top = outsideRect.top + outsideRect.height;
-      return tw.moveTo(left, top);
-    }), _defineProperty(_edge, positions.bottomRight, function (tw, outsideRect, dialogRect) {
+      return moveFn(left, top);
+    }), _defineProperty(_horizontalEdge, positions.bottomRight, function (moveFn, outsideRect, dialogRect) {
       var left = outsideRect.left + outsideRect.width,
           top = outsideRect.top + outsideRect.height - dialogRect.height;
-      return tw.moveTo(left, top);
-    }), _edge);
+      return moveFn(left, top);
+    }), _horizontalEdge);
+
+    var verticalEdge = (_verticalEdge = {}, _defineProperty(_verticalEdge, positions.topLeft, function (moveFn, outsideRect, dialogRect) {
+      var top = outsideRect.top - dialogRect.height;
+      return moveFn(outsideRect.left, top);
+    }), _defineProperty(_verticalEdge, positions.topCenter, function (moveFn, outsideRect, dialogRect) {
+      var top = outsideRect.top - dialogRect.height,
+          left = outsideRect.left - (dialogRect.width - outsideRect.width) / 2;
+      return moveFn(left, top);
+    }), _defineProperty(_verticalEdge, positions.topRight, function (moveFn, outsideRect, dialogRect) {
+      var top = outsideRect.top - dialogRect.height,
+          left = outsideRect.right - dialogRect.width;
+      return moveFn(left, top);
+    }), _defineProperty(_verticalEdge, positions.centerLeft, function (moveFn, outsideRect, dialogRect) {
+      var top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2,
+          left = outsideRect.left - dialogRect.width;
+      return moveFn(left, top);
+    }), _defineProperty(_verticalEdge, positions.center, function (moveFn, outsideRect, dialogRect) {
+      var top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2,
+          left = outsideRect.left - (dialogRect.width - outsideRect.width) / 2;
+      return moveFn(left, top);
+    }), _defineProperty(_verticalEdge, positions.centerRight, function (moveFn, outsideRect, dialogRect) {
+      var top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2,
+          left = outsideRect.right - dialogRect.width;
+      return moveFn(left, top);
+    }), _defineProperty(_verticalEdge, positions.bottomLeft, function (moveFn, outsideRect) {
+      return moveFn(outsideRect.left, outsideRect.bottom);
+    }), _defineProperty(_verticalEdge, positions.bottomCenter, function (moveFn, outsideRect, dialogRect) {
+      var left = outsideRect.left - (dialogRect.width - outsideRect.width) / 2;
+      return moveFn(left, outsideRect.bottom);
+    }), _defineProperty(_verticalEdge, positions.bottomRight, function (moveFn, outsideRect, dialogRect) {
+      var left = outsideRect.right - dialogRect.width;
+      return moveFn(left, outsideRect.bottom);
+    }), _verticalEdge);
 
     module.exports = {
       inside: inside,
       outside: outside,
-      edge: edge
+      horizontalEdge: horizontalEdge,
+      verticalEdge: verticalEdge
     };
   }, { "./config": 2 }], 4: [function (require, module, exports) {
     /*
@@ -329,6 +369,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         }
       },
       hide: function hide() {
+        this._raised = false; // stop another Escape key from flashing this back in again
         if (this._options.animated) {
           this._animateClose();
         } else {
@@ -447,65 +488,54 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         });
       },
       moveToConfiguredStartPosition: function moveToConfiguredStartPosition() {
-        if (this._options.position === positions.auto) {
+        if (this._isAutoPosition) {
           return;
         }
         this._relativeElement = this._relativeElement || this._findRelativeElement();
         if (!this._relativeElement) {
           return;
         }
-        var alignment = (this._options.align || alignments.inside).toLowerCase(),
-            el = this._relativeElement,
-            pos = this._options.position || "auto";
+        var el = this._relativeElement;
 
-        this._positionWith(el, pos, alignment);
+        this._positionWith(el, this._options.placement);
       },
-      _positionWith: function _positionWith(el, pos, alignment) {
-        var positions = pos.split(","),
-            alignments = alignment.split(",");
+
+
+      get _isAutoPosition() {
+        var placement = (this._options.placement || "").trim().toLowerCase();
+        return !placement || placement.split("|").indexOf("auto") > -1;
+      },
+
+      _positionWith: function _positionWith(el, placements) {
+        var moveFn = this.moveUnconstrained.bind(this);
         var _iteratorNormalCompletion = true;
         var _didIteratorError = false;
         var _iteratorError = undefined;
 
         try {
-          for (var _iterator = alignments[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var thisAlignment = _step.value;
-            var _iteratorNormalCompletion2 = true;
-            var _didIteratorError2 = false;
-            var _iteratorError2 = undefined;
+          for (var _iterator = placements.split("|")[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var placement = _step.value;
 
-            try {
-              for (var _iterator2 = positions[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                var thisPosition = _step2.value;
+            var _grokPlacement = this._grokPlacement(placement),
+                align = _grokPlacement.align,
+                position = _grokPlacement.position;
 
-                var alignmentPositioners = positioners[thisAlignment];
-                if (!alignmentPositioners) {
-                  return console.error("alignment not understood: " + (thisAlignment || "(not set"));
-                }
-                var positioner = alignmentPositioners[thisPosition];
-                if (!positioner) {
-                  return console.error("position / alignment not understood: " + thisAlignment + "/" + (pos || "(not set)"));
-                }
-                var insideRect = el.getBoundingClientRect(),
-                    dialogRect = this._dialog.getBoundingClientRect();
-                positioner(this, insideRect, dialogRect);
-                if (this._withinView()) {
-                  return;
-                }
-              }
-            } catch (err) {
-              _didIteratorError2 = true;
-              _iteratorError2 = err;
-            } finally {
-              try {
-                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                  _iterator2.return();
-                }
-              } finally {
-                if (_didIteratorError2) {
-                  throw _iteratorError2;
-                }
-              }
+            if (!position || !align) {
+              return;
+            }
+            var alignmentPositioners = positioners[align];
+            if (!alignmentPositioners) {
+              return console.error("alignment not understood: " + align);
+            }
+            var positioner = alignmentPositioners[position];
+            if (!positioner) {
+              return console.error("position not understood for alignment '" + align + "': '" + position + "'");
+            }
+            var insideRect = el.getBoundingClientRect(),
+                dialogRect = this._dialog.getBoundingClientRect(),
+                positionResult = positioner(moveFn, insideRect, dialogRect);
+            if (positionResult && this._withinView()) {
+              return;
             }
           }
         } catch (err) {
@@ -523,6 +553,20 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           }
         }
       },
+      _grokPlacement: function _grokPlacement(placement) {
+        var parts = placement.split(",");
+        if (parts.length !== 2) {
+          console.error("Bad placement: '" + placement);
+          return null;
+        }
+        return Object.keys(alignments).indexOf(parts[0]) > -1 ? {
+          align: parts[0],
+          position: parts[1]
+        } : {
+          align: parts[1],
+          position: parts[0]
+        };
+      },
       _withinView: function _withinView() {
         var docEl = document.documentElement,
             viewportLeft = docEl.scrollLeft,
@@ -532,7 +576,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
             viewportRight = viewportLeft + viewportWidth,
             viewportBottom = viewportTop + viewportHeight,
             dialogRect = this._dialog.getBoundingClientRect();
-        return dialogRect.top >= viewportTop && dialogRect.left >= viewportLeft && dialogRect.right <= viewportRight && dialogRect.bottom >= viewportBottom;
+        return dialogRect.top >= viewportTop && dialogRect.left >= viewportLeft && dialogRect.right <= viewportRight && dialogRect.bottom <= viewportBottom;
       },
       _findRelativeElement: function _findRelativeElement() {
         var rel = this._options.relativeToElement;
@@ -548,7 +592,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         var results = document.querySelectorAll(selector);
         if (results.length === 0) {
           warn("unable to find any element with selector '" + selector + "'");
-        } else if (results.length > 0) {
+        } else if (results.length > 1) {
           warn("multiple elements matched by selector '" + selector + "' (first will be used)");
         }
         return results[0];
@@ -556,6 +600,21 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       moveTo: function moveTo(left, top, width, height) {
         this._moveTo(left, top, width, height);
         this.constrain();
+        return this._validatePosition(left, top, width, height);
+      },
+      moveUnconstrained: function moveUnconstrained(left, top, width, height) {
+        this._moveTo(left, top, width, height);
+        return this._validatePosition(left, top, width, height);
+      },
+      _validatePosition: function _validatePosition(left, top, width, height) {
+        var dialogRect = this._dialog.getBoundingClientRect();
+        return this._closeEnough(left, dialogRect.left) && this._closeEnough(top, dialogRect.top) && this._closeEnough(width, dialogRect.width) && this._closeEnough(height, dialogRect.height);
+      },
+      _closeEnough: function _closeEnough(num1, num2) {
+        if (num1 === undefined || num2 === undefined || num1 === null || num2 === null) {
+          return true;
+        }
+        return Math.abs(num1 - num2) < 1;
       },
       _moveTo: function _moveTo(left, top, width, height) {
         if (left !== undefined && left !== null) {

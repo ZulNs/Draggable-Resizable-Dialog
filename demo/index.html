@@ -60,6 +60,10 @@
         <input id="reuse" type="checkbox"/>
         <label for="reuse">Re-use existing dialogs (will keep their last position)</label>
     </div>
+    <div>
+        <input id="animate" type="checkbox"/>
+        <label for="animate">Animate show / hide (fade-in / fade-out)</label>
+    </div>
 
     <div id="boundBox">
 
@@ -96,14 +100,25 @@
   }
 
   function populatePositions() {
-    var sel = document.querySelector("select#position");
-    setOptions(sel, Object.keys(ToolWindow.positions));
     var
-      extraValue = "topRight,bottomRight",
-      opt = document.createElement("option");
-    opt.text = extraValue;
-    opt.value = extraValue;
-    sel.appendChild(opt);
+      lastSelected = localStorage.getItem("position"),
+      sel = document.querySelector("select#position"),
+      extraValues = [
+        "horizontalEdge,topRight|horizontalEdge,bottomRight|verticalEdge,topRight|verticalEdge,bottomRight",
+        "verticalEdge,topRight|verticalEdge,bottomRight"
+      ];
+    setOptions(sel, Object.keys(ToolWindow.positions));
+    extraValues.forEach(function(extraValue) {
+      var
+        opt = document.createElement("option");
+      opt.text = extraValue;
+      opt.value = extraValue;
+      sel.appendChild(opt);
+    });
+    var matchingOpt = sel.querySelector("option[value='" + lastSelected + "']");
+    if (matchingOpt) {
+      matchingOpt.selected = true;
+    }
   }
 
   function populateRelativity() {
@@ -131,7 +146,8 @@
         style.top = "25vh";
         break;
       case "outside":
-      case "edge":
+      case "verticalEdge":
+      case "horizontalEdge":
         style.height = "10vh";
         style.width = "10vw";
         style.left = "45vw";
@@ -152,9 +168,20 @@
     }
   }
 
+  function restoreCheckboxStates() {
+    var checks = Array.from(document.querySelector("input[type='checkbox']"));
+    checks.forEach(function(chk) {
+      chk.checked = JSON.parse(localStorage.getItem(chk.id)) || false;
+      chk.addEventListener("change", function(ev) {
+        localStorage.setItem(ev.target.id, ev.target.checked.toString());
+      });
+    });
+  }
+
   function ready() {
     populatePositions();
     populateRelativity();
+    restoreCheckboxStates();
     resizeContainerOnInOutChange();
     resizeContainerForAlignmentChange(document.querySelector("select#align").value);
     document.querySelector("button").focus();
@@ -265,7 +292,7 @@
       type: "html",
       value: "<html lang=\"en\"><head><title></title></title></head><body><h2>HTML Content!</h2><p>" + bacon + "</p></body></html>"
     },
-    position: document.querySelector("#position").value,
+    placement: [document.querySelector("#align"), document.querySelector("#position").value].join(","),
     relativeToElement: ".container"
   };
 
@@ -322,12 +349,13 @@
   function show(which) {
     var
       reuse = document.querySelector("input#reuse").checked,
+      animated = document.querySelector("input#animate").checked,
       position = document.querySelector("select#position").value,
       align = document.querySelector("select#align").value,
       options = Object.assign({}, configurations[which], {
-        position: position,
+        placement: position.indexOf("|") > -1 ? position : [ align, position ].join(","),
         relativeToElement: "#container",
-        align: align
+        animated
       });
     if (!dialogs[which] || !reuse) {
       dialogs[which] = new ToolWindow(options);

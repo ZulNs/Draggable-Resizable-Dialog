@@ -134,108 +134,98 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       var left = outsideRect.right,
           top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2;
       return moveFn(left, top);
+    }), _defineProperty(_outside, positions.bottomCenter, function (moveFn, relativeRect, dialogRect) {
+      var left = relativeRect.left + (relativeRect.width - dialogRect.width) / 2;
+      return moveFn(left, relativeRect.bottom);
     }), _outside);
 
-    var inside = (_inside = {}, _defineProperty(_inside, positions.topLeft, function (moveFn, insideRect) {
-      return moveFn(insideRect.left, insideRect.top);
-    }), _defineProperty(_inside, positions.topCenter, function (moveFn, insideRect, dialogRect) {
-      var left = insideRect.left + (insideRect.width - dialogRect.width) / 2;
-      return moveFn(left, insideRect.top);
-    }), _defineProperty(_inside, positions.topRight, function (moveFn, insideRect, dialogRect) {
-      var left = insideRect.left + insideRect.width - dialogRect.width;
-      return moveFn(left, insideRect.top);
-    }), _defineProperty(_inside, positions.centerLeft, function (moveFn, insideRect, dialogRect) {
-      var top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
-      return moveFn(insideRect.left, top);
-    }), _defineProperty(_inside, positions.center, function (moveFn, insideRect, dialogRect) {
-      var left = insideRect.left + (insideRect.width - dialogRect.width) / 2,
-          top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
+    var inside = (_inside = {}, _defineProperty(_inside, positions.topLeft, function (moveFn, relativeRect) {
+      return moveFn(relativeRect.left, relativeRect.top);
+    }), _defineProperty(_inside, positions.topCenter, function (moveFn, relativeRect, dialogRect) {
+      var left = relativeRect.left + (relativeRect.width - dialogRect.width) / 2;
+      return moveFn(left, relativeRect.top);
+    }), _defineProperty(_inside, positions.topRight, function (moveFn, relativeRect, dialogRect) {
+      var left = relativeRect.left + relativeRect.width - dialogRect.width;
+      return moveFn(left, relativeRect.top);
+    }), _defineProperty(_inside, positions.centerLeft, function (moveFn, relativeRect, dialogRect) {
+      var top = relativeRect.top + (relativeRect.height - dialogRect.height) / 2;
+      return moveFn(relativeRect.left, top);
+    }), _defineProperty(_inside, positions.center, function (moveFn, relativeRect, dialogRect) {
+      return outside[positions.center](moveFn, relativeRect, dialogRect);
+    }), _defineProperty(_inside, positions.centerRight, function (moveFn, relativeRect, dialogRect) {
+      var left = relativeRect.left + relativeRect.width - dialogRect.width,
+          top = relativeRect.top + (relativeRect.height - dialogRect.height) / 2;
       return moveFn(left, top);
-    }), _defineProperty(_inside, positions.centerRight, function (moveFn, insideRect, dialogRect) {
-      var left = insideRect.left + insideRect.width - dialogRect.width,
-          top = insideRect.top + (insideRect.height - dialogRect.height) / 2;
+    }), _defineProperty(_inside, positions.bottomLeft, function (moveFn, relativeRect, dialogRect) {
+      var top = relativeRect.top + relativeRect.height - dialogRect.height;
+      return moveFn(relativeRect.left, top);
+    }), _defineProperty(_inside, positions.bottomCenter, function (moveFn, relativeRect, dialogRect) {
+      var left = relativeRect.left + (relativeRect.width - dialogRect.width) / 2,
+          top = relativeRect.top + relativeRect.height - dialogRect.height;
       return moveFn(left, top);
-    }), _defineProperty(_inside, positions.bottomLeft, function (moveFn, insideRect, dialogRect) {
-      var top = insideRect.top + insideRect.height - dialogRect.height;
-      return moveFn(insideRect.left, top);
-    }), _defineProperty(_inside, positions.bottomCenter, function (moveFn, insideRect, dialogRect) {
-      var left = insideRect.left + (insideRect.width - dialogRect.width) / 2,
-          top = insideRect.top + insideRect.height - dialogRect.height;
-      return moveFn(left, top);
-    }), _defineProperty(_inside, positions.bottomRight, function (moveFn, insideRect, dialogRect) {
-      var left = insideRect.left + insideRect.width - dialogRect.width,
-          top = insideRect.top + insideRect.height - dialogRect.height;
+    }), _defineProperty(_inside, positions.bottomRight, function (moveFn, relativeRect, dialogRect) {
+      var left = relativeRect.left + relativeRect.width - dialogRect.width,
+          top = relativeRect.top + relativeRect.height - dialogRect.height;
       return moveFn(left, top);
     }), _inside);
 
-    var horizontalEdge = (_horizontalEdge = {}, _defineProperty(_horizontalEdge, positions.topLeft, function (moveFn, outsideRect, dialogRect) {
-      var left = outsideRect.left - dialogRect.width;
-      return moveFn(left, outsideRect.top);
-    }), _defineProperty(_horizontalEdge, positions.topCenter, function (moveFn, outsideRect, dialogRect) {
-      var left = outsideRect.left - (dialogRect.width - outsideRect.width) / 2,
-          top = outsideRect.top - dialogRect.height;
+    var horizontalEdge = (_horizontalEdge = {}, _defineProperty(_horizontalEdge, positions.topLeft, function (moveFn, relativeRect, dialogRect) {
+      var left = relativeRect.left - dialogRect.width;
+      return moveFn(left, relativeRect.top);
+    }), _defineProperty(_horizontalEdge, positions.topCenter, function (moveFn, relativeRect, dialogRect) {
+      return outside[positions.topCenter](moveFn, relativeRect, dialogRect);
+    }), _defineProperty(_horizontalEdge, positions.topRight, function (moveFn, relativeRect) {
+      var left = relativeRect.left + relativeRect.width,
+          top = relativeRect.top;
       return moveFn(left, top);
-    }), _defineProperty(_horizontalEdge, positions.topRight, function (moveFn, outsideRect) {
-      var left = outsideRect.left + outsideRect.width,
-          top = outsideRect.top;
+    }), _defineProperty(_horizontalEdge, positions.centerLeft, function (moveFn, relativeRect, dialogRect) {
+      var left = relativeRect.left - dialogRect.width,
+          top = relativeRect.top + relativeRect.height / 2;
       return moveFn(left, top);
-    }), _defineProperty(_horizontalEdge, positions.centerLeft, function (moveFn, outsideRect, dialogRect) {
-      var left = outsideRect.left - dialogRect.width,
-          top = outsideRect.top + outsideRect.height / 2;
+    }), _defineProperty(_horizontalEdge, positions.center, function (moveFn, relativeRect, dialogRect) {
+      return outside[positions.center](moveFn, relativeRect, dialogRect);
+    }), _defineProperty(_horizontalEdge, positions.centerRight, function (moveFn, relativeRect) {
+      var left = relativeRect.left + relativeRect.width,
+          top = relativeRect.top + relativeRect.height / 2;
       return moveFn(left, top);
-    }), _defineProperty(_horizontalEdge, positions.center, function (moveFn, outsideRect, dialogRect) {
-      var left = outsideRect.left + (outsideRect.width - dialogRect.width) / 2,
-          top = outsideRect.top + outsideRect.height / 2;
+    }), _defineProperty(_horizontalEdge, positions.bottomLeft, function (moveFn, relativeRect, dialogRect) {
+      var left = relativeRect.left - dialogRect.width,
+          top = relativeRect.top + relativeRect.height - dialogRect.height;
       return moveFn(left, top);
-    }), _defineProperty(_horizontalEdge, positions.centerRight, function (moveFn, outsideRect) {
-      var left = outsideRect.left + outsideRect.width,
-          top = outsideRect.top + outsideRect.height / 2;
-      return moveFn(left, top);
-    }), _defineProperty(_horizontalEdge, positions.bottomLeft, function (moveFn, outsideRect, dialogRect) {
-      var left = outsideRect.left - dialogRect.width,
-          top = outsideRect.top + outsideRect.height - dialogRect.height;
-      return moveFn(left, top);
-    }), _defineProperty(_horizontalEdge, positions.bottomCenter, function (moveFn, outsideRect, dialogRect) {
-      var left = outsideRect.left + (outsideRect.width - dialogRect.width) / 2,
-          top = outsideRect.top + outsideRect.height;
-      return moveFn(left, top);
-    }), _defineProperty(_horizontalEdge, positions.bottomRight, function (moveFn, outsideRect, dialogRect) {
-      var left = outsideRect.left + outsideRect.width,
-          top = outsideRect.top + outsideRect.height - dialogRect.height;
+    }), _defineProperty(_horizontalEdge, positions.bottomCenter, function (moveFn, relativeRect, dialogRect) {
+      return outside[positions.bottomCenter](moveFn, relativeRect, dialogRect);
+    }), _defineProperty(_horizontalEdge, positions.bottomRight, function (moveFn, relativeRect, dialogRect) {
+      var left = relativeRect.left + relativeRect.width,
+          top = relativeRect.top + relativeRect.height - dialogRect.height;
       return moveFn(left, top);
     }), _horizontalEdge);
 
-    var verticalEdge = (_verticalEdge = {}, _defineProperty(_verticalEdge, positions.topLeft, function (moveFn, outsideRect, dialogRect) {
-      var top = outsideRect.top - dialogRect.height;
-      return moveFn(outsideRect.left, top);
-    }), _defineProperty(_verticalEdge, positions.topCenter, function (moveFn, outsideRect, dialogRect) {
-      var top = outsideRect.top - dialogRect.height,
-          left = outsideRect.left - (dialogRect.width - outsideRect.width) / 2;
+    var verticalEdge = (_verticalEdge = {}, _defineProperty(_verticalEdge, positions.topLeft, function (moveFn, relativeRect, dialogRect) {
+      var top = relativeRect.top - dialogRect.height;
+      return moveFn(relativeRect.left, top);
+    }), _defineProperty(_verticalEdge, positions.topCenter, function (moveFn, relativeRect, dialogRect) {
+      return outside[positions.topCenter](moveFn, relativeRect, dialogRect);
+    }), _defineProperty(_verticalEdge, positions.topRight, function (moveFn, relativeRect, dialogRect) {
+      var top = relativeRect.top - dialogRect.height,
+          left = relativeRect.right - dialogRect.width;
       return moveFn(left, top);
-    }), _defineProperty(_verticalEdge, positions.topRight, function (moveFn, outsideRect, dialogRect) {
-      var top = outsideRect.top - dialogRect.height,
-          left = outsideRect.right - dialogRect.width;
+    }), _defineProperty(_verticalEdge, positions.centerLeft, function (moveFn, relativeRect, dialogRect) {
+      var top = relativeRect.top - (dialogRect.height - relativeRect.height) / 2,
+          left = relativeRect.left - dialogRect.width;
       return moveFn(left, top);
-    }), _defineProperty(_verticalEdge, positions.centerLeft, function (moveFn, outsideRect, dialogRect) {
-      var top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2,
-          left = outsideRect.left - dialogRect.width;
+    }), _defineProperty(_verticalEdge, positions.center, function (moveFn, relativeRect, dialogRect) {
+      return outside[positions.center](moveFn, relativeRect, dialogRect);
+    }), _defineProperty(_verticalEdge, positions.centerRight, function (moveFn, relativeRect, dialogRect) {
+      var top = relativeRect.top - (dialogRect.height - relativeRect.height) / 2,
+          left = relativeRect.right - dialogRect.width;
       return moveFn(left, top);
-    }), _defineProperty(_verticalEdge, positions.center, function (moveFn, outsideRect, dialogRect) {
-      var top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2,
-          left = outsideRect.left - (dialogRect.width - outsideRect.width) / 2;
-      return moveFn(left, top);
-    }), _defineProperty(_verticalEdge, positions.centerRight, function (moveFn, outsideRect, dialogRect) {
-      var top = outsideRect.top - (dialogRect.height - outsideRect.height) / 2,
-          left = outsideRect.right - dialogRect.width;
-      return moveFn(left, top);
-    }), _defineProperty(_verticalEdge, positions.bottomLeft, function (moveFn, outsideRect) {
-      return moveFn(outsideRect.left, outsideRect.bottom);
-    }), _defineProperty(_verticalEdge, positions.bottomCenter, function (moveFn, outsideRect, dialogRect) {
-      var left = outsideRect.left - (dialogRect.width - outsideRect.width) / 2;
-      return moveFn(left, outsideRect.bottom);
-    }), _defineProperty(_verticalEdge, positions.bottomRight, function (moveFn, outsideRect, dialogRect) {
-      var left = outsideRect.right - dialogRect.width;
-      return moveFn(left, outsideRect.bottom);
+    }), _defineProperty(_verticalEdge, positions.bottomLeft, function (moveFn, relativeRect) {
+      return moveFn(relativeRect.left, relativeRect.bottom);
+    }), _defineProperty(_verticalEdge, positions.bottomCenter, function (moveFn, relativeRect, dialogRect) {
+      return outside[positions.bottomCenter](moveFn, relativeRect, dialogRect);
+    }), _defineProperty(_verticalEdge, positions.bottomRight, function (moveFn, relativeRect, dialogRect) {
+      var left = relativeRect.right - dialogRect.width;
+      return moveFn(left, relativeRect.bottom);
     }), _verticalEdge);
 
     module.exports = {

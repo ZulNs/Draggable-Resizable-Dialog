@@ -254,5 +254,10 @@ declare module "toolwindow" {
      * Ensures that the tool window is visible on-screen, within the client viewport
      */
     boundWithinScreen();
+
+    /**
+     * Attempt to move to the start position configured for this window
+     */
+    moveToConfiguredStartPosition();
   }
 }

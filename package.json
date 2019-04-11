@@ -1,6 +1,6 @@
 {
   "name": "toolwindow",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "Provides a draggable, resizable tool window for text, html and remote (iframed) content",
   "keywords": [
     "window",

@@ -715,11 +715,21 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       },
       _setText: function _setText(text) {
         this._dialogContent.innerHTML = "";
+        if (typeof text !== "string") {
+          text = (text || "").toString();
+        }
         this._dialogContent.innerText = text;
       },
       _setHTML: function _setHTML(html) {
         this._dialogContent.innerText = "";
-        this._dialogContent.innerHTML = html;
+        if (this._looksLikeAnHTMLElement(html)) {
+          this._dialogContent.appendChild(html);
+        } else {
+          this._dialogContent.innerHTML = html;
+        }
+      },
+      _looksLikeAnHTMLElement: function _looksLikeAnHTMLElement(item) {
+        return (typeof item === "undefined" ? "undefined" : _typeof(item)) === "object" && item.tagName !== undefined && typeof item.getAttribute === "function";
       },
       _looksLikeAPromise: function _looksLikeAPromise(obj) {
         return obj && typeof obj["then"] === "function";

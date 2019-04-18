@@ -39,6 +39,7 @@
     <button onclick="show('text');">Show TEXT Dialog</button>
     <button onclick="show('text-bound');">Show TEXT Dialog (constrained)</button>
     <button onclick="show('html');">Show HTML Dialog</button>
+    <button onclick="show('html-element');">Show HTML Dialog (element source)</button>
     <button onclick="show('iframe');">Show IFRAME Dialog</button>
     <button onclick="show('async');">Show HTML Dialog (async)</button>
     <button onclick="show('nobuttons');">Show Dialog with NO buttons</button>
@@ -73,12 +74,6 @@
 <div id="bottom-spacer"></div>
 <script type="text/javascript">
   var
-    refreshingDialog,
-    noButtonsDialog,
-    iframeDialog,
-    textDialog,
-    htmlDialog,
-    htmlDialogAsync,
     asyncCount = 0,
     bacon = "Bacon ipsum dolor amet hamburger bacon pork turkey pig, short ribs burgdoggen chicken doner pork belly meatball. Jerky pork loin buffalo, ground round short loin corned beef bresaola burgdoggen turkey. Beef sausage porchetta, drumstick buffalo jerky meatloaf. Drumstick prosciutto chuck swine. Shankle porchetta tri-tip cupim biltong beef ribs cow picanha corned beef pork chop tongue doner meatball ribeye. Picanha buffalo flank, ribeye turkey pastrami chuck. Bacon ipsum dolor amet hamburger bacon pork turkey pig, short ribs burgdoggen chicken doner pork belly meatball. Jerky pork loin buffalo, ground round short loin corned beef bresaola burgdoggen turkey. Beef sausage porchetta, drumstick buffalo jerky meatloaf. Drumstick prosciutto chuck swine. Shankle porchetta tri-tip cupim biltong beef ribs cow picanha corned beef pork chop tongue doner meatball ribeye. Picanha buffalo flank, ribeye turkey pastrami chuck.";
 
@@ -296,6 +291,21 @@
     relativeToElement: ".container"
   };
 
+  var htmlElementConfig = Object.assign({}, htmlConfig);
+  htmlElementConfig.content = {
+    type: "html",
+    value: () => {
+      var div = document.createElement("div");
+      var h2 = document.createElement("h2");
+      h2.innerText = "HTML Element content";
+      var p = document.createElement("p");
+      p.innerText = bacon;
+      div.appendChild(h2);
+      div.appendChild(p);
+      return div;
+    }
+  };
+
   var asyncConfig = {
     title: "Demo Tool Window",
     buttons: [
@@ -338,6 +348,7 @@
     "refreshing": refreshingConfig,
     "async": asyncConfig,
     "html": htmlConfig,
+    "html-element": htmlElementConfig,
     "text": textConfig,
     "text-bound": Object.assign({}, textConfig, { boundingElement: "#boundBox" }),
     "iframe": iframeConfig,
@@ -347,6 +358,10 @@
   var dialogs = {};
 
   function show(which) {
+    if (!configurations[which]) {
+      console.error("no configuration: " + which);
+      return;
+    }
     var
       reuse = document.querySelector("input#reuse").checked,
       animated = document.querySelector("input#animate").checked,

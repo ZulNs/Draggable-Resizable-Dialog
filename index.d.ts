@@ -189,14 +189,25 @@ declare module "toolwindow" {
      * - string
      * - function returning a string
      * - function returning a Promise which resolves to a string
+     * - HTMLElement
+     * - function returning an HTMLElement
+     * - function returning a Promise which resolves to an HTMLElement
      */
-    value: string | StringSource | AsyncStringSource | HTMLElement | HTMLElementSource | AsyncHTMLElementSource;
+    value: ToolWindowContentValue;
   }
 
   type StringSource = () => string;
   type AsyncStringSource = () => Promise<string>;
   type HTMLElementSource = () => HTMLElement;
   type AsyncHTMLElementSource = () => Promise<HTMLElement>;
+  type HTMLElementOrStringSource = () => HTMLElement | string;
+  type AsyncHTMLElementOrStringSource = () => Promise<HTMLElement | string>;
+
+  type ToolWindowContentValue =
+    string | HTMLElement |
+    StringSource | AsyncStringSource |
+    HTMLElementSource | AsyncHTMLElementSource |
+    HTMLElementOrStringSource | AsyncHTMLElementOrStringSource;
 
   /**
    * use actual numbers or relatives like "+10" and "-5"

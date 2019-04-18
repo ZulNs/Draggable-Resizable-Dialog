@@ -263,6 +263,13 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
     function ToolWindow(options) {
 
+      options = options || {};
+      Object.keys(options).forEach(function (k) {
+        if (options[k] === undefined || options[k] === null) {
+          // prevent an unintentional undefined / null from overwriting default options
+          delete options[k];
+        }
+      });
       this._options = Object.assign({}, defaultOptions, options || {});
       if (this._options.minZIndex > zIndex) {
         zIndex = this._options.minZIndex;

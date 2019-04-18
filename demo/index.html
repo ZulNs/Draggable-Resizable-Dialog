@@ -283,6 +283,8 @@
     ],
     top: 300,
     left: 350,
+    width: undefined,
+    height: undefined,
     content: {
       type: "html",
       value: "<html lang=\"en\"><head><title></title></title></head><body><h2>HTML Content!</h2><p>" + bacon + "</p></body></html>"
@@ -372,6 +374,7 @@
         relativeToElement: "#container",
         animated
       });
+    debugger;
     if (!dialogs[which] || !reuse) {
       dialogs[which] = new ToolWindow(options);
     }

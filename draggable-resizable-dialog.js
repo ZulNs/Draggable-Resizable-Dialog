@@ -2,10 +2,13 @@
  * Pure JavaScript for Draggable and Risizable Dialog Box
  *
  * Designed by ZulNs, @Gorontalo, Indonesia, 7 June 2017
+ * Extended by frank.buchholz, Germany, 2019
  */
-
-var _minW = 200,
-	_minH = 200,
+ // Encapsulate variables and functions to allow instanciation of multiple dialog boxes
+function DialogBox(id, callback) {
+		
+var	_minW = 100, // Get's calculated
+	_minH = 1, // Get's calculated
 	_resizePixel = 5,
 	_hasEventListeners = !!window.addEventListener,
 	_parent,
@@ -20,14 +23,24 @@ var _minW = 200,
 	_isDrag = false,
 	_isResize = false,
 	_isButton = false,
-	_isButtonHovered = false,
-	_isClickEvent = true,
+	_isButtonHovered = false, // Let's use standard hover (see css)
+	//_isClickEvent = true, // Showing several dialog boxes work better if I do not use this variable
 	_resizeMode = '',
 	_whichButton,
 	_buttons,
 	_tabBoundary,
-	_showButton,
-	_status,
+	//_showButton, // Update of _showButton and _status should be done by the caller itself..
+	//_status, // Update of _showButton and _status should be done by the caller itself..
+	_callback, // .. therefore we use a cllback function which transfers the name of the selected button to the caller
+	_zIndex, // Initial zIndex of this dialog box 
+	_zIndexFlag = false, // Bring this dialog box to front 
+	_setCursor, // Forward declaration to get access to this function in the closure
+	_whichClick, // Forward declaration to get access to this function in the closure
+	_setDialogContent, // Forward declaration to get access to this function in the closure
+	
+	_log = function(text) {
+		if (false) console.log(text); // show log if condition is set to true
+	},
 	
 	_addEvent = function(elm, evt, callback) {
 		if (elm == null || typeof(elm) == undefined)
@@ -51,11 +64,19 @@ var _minW = 200,
 		}
 	},
 	
+	// not used
+	/*
 	_returnTrueEvent = function(evt) {
 		evt.returnValue = true;
 		return true;
 	},
+	*/
 	
+	// not used
+	// Mybe we should be able to destroy a dialog box, too. 
+	// In this case we should remove the event listeners from the dialog box but 
+	// I do not know how to identfy which event listeners should be removed from the document.
+	/*
 	_removeEvent = function(elm, evt, callback) {
 		if (elm == null || typeof(elm) == undefined)
 			return;
@@ -64,6 +85,7 @@ var _minW = 200,
 		else if (elm.detachEvent)
 			elm.detachEvent('on' + evt, callback);
 	},
+	*/
 	
 	_adjustFocus = function(evt) {
 		evt = evt || window.event;
@@ -88,15 +110,24 @@ var _minW = 200,
 	
 	_onClick = function(evt) {
 		evt = evt || window.event;
-		if (_isClickEvent)
+		_log('_onClick ' + _dialog.id + ': ' + evt.target.name);		
+		//if (_isClickEvent)
 			_whichClick(evt.target);
-		else
-			_isClickEvent = true;
+		//else
+		//	_isClickEvent = true;
 		return _returnEvent(evt);
-	}
+	},
 	
 	_onMouseDown = function(evt) {
 		evt = evt || window.event;
+		_log('\n_onMouseDown ' + _dialog.id + ': ' + evt.target.nodeName + ' ' + evt.target.name);
+		_zIndexFlag = true;
+		// mousedown might happen on any place of the dialog box, therefore 
+		// we need to take care that this does not to mess up normal events 
+		// on the content of the dialog box, i.e. to copy text
+		if ( !(evt.target === _dialog || evt.target === _dialogTitle || evt.target === _buttons[0]))
+			return;
+		_log('_onMouseDown ' + _dialog.id + ' go');		
 		var rect = _getOffset(_dialog);
 		_maxX = Math.max(
 			document.documentElement["clientWidth"],
@@ -123,7 +154,7 @@ var _minW = 200,
 		_leftPos = rect.left;
 		_topPos = rect.top;
 		if (_isButtonHovered) {
-			_whichButton.classList.remove('hover');
+			//_whichButton.classList.remove('hover');
 			_whichButton.classList.remove('focus');
 			_whichButton.classList.add('active');
 			_isButtonHovered = false;
@@ -133,14 +164,21 @@ var _minW = 200,
 			_setCursor('move');
 			_isDrag = true;
 		}
-		else if (_resizeMode != '')
+		else if (_resizeMode != '') {
 			_isResize = true;
+			_log('_onMouseDown ' + _dialog.id + ': _resizeMode=' + _resizeMode + ', set _isResize=' + _isResize);	
+		}	
 		var r = _dialog.getBoundingClientRect();
 		return _returnEvent(evt);
 	},
 	
 	_onMouseMove = function(evt) {
 		evt = evt || window.event;
+		// mousemove might run out of the dialog box during drag or resize, therefore we need to 
+		// attach the event to the whole document, but we need to take care that this  
+		// does not to mess up normal events outside of the dialog box.
+		if ( !(evt.target === _dialog || evt.target === _dialogTitle || evt.target === _buttons[0]) && !_isDrag && _resizeMode == '')
+			return;
 		if (_isDrag) {
 			var dx = _startX - evt.pageX,
 				dy = _startY - evt.pageY,
@@ -197,6 +235,7 @@ var _minW = 200,
 			window.scrollTo(scrollL, scrollT);
 		}
 		else if (_isResize) {
+			//_log('_onMouseMove ' + _dialog.id + ': _resizeMode=' + _resizeMode + ', _isResize=' + _isResize);	
 			var dw, dh, w, h;
 			if (_resizeMode == 'w') {
 				dw = _startX - evt.pageX;
@@ -316,6 +355,7 @@ var _minW = 200,
 				_dialog.style.width = w + 'px';
 				_dialog.style.height = h + 'px';
 			}
+			_log('_setDialogContent ' + _dialog.id + ': ' + evt.target.id);		
 			_setDialogContent();
 		}
 		else if (!_isButton) {
@@ -342,56 +382,81 @@ var _minW = 200,
 					cs = 'nwse-resize';
 				_setCursor(cs);
 				_resizeMode = rm;
+				//_log('_onMouseMove ' + _dialog.id + ': set _resizeMode=' + _resizeMode + ', _isResize=' + _isResize);	
 			}
 			else if (rm == '' && _resizeMode != '') {
 				_setCursor('');
 				_resizeMode = '';
+				//_log('_onMouseMove ' + _dialog.id + ': set _resizeMode=' + _resizeMode + ', _isResize=' + _isResize);	
 			}
 			if (evt.target != _buttons[0] && evt.target.tagName.toLowerCase() == 'button' || evt.target === _buttons[0] && rm == '') {
 				if (!_isButtonHovered || _isButtonHovered && evt.target != _whichButton) {
 					_whichButton = evt.target;
-					_whichButton.classList.add('hover');
+					//_whichButton.classList.add('hover');
 					_isButtonHovered = true;
 				}
 			}
 			else if (_isButtonHovered) {
-				_whichButton.classList.remove('hover');
+				//_whichButton.classList.remove('hover');
 				_isButtonHovered = false;
 			}
 		}
 		return _returnEvent(evt);
-	},
+	};
 	
 	_onMouseUp = function(evt) {
 		evt = evt || window.event;
-		_isClickEvent = false;
+		_log('_onMouseUp ' + _dialog.id + ': ' + evt.target.nodeName + ' ' + evt.target.name + ': _isButton=' + _isButton);
+		if (_zIndexFlag) {
+			_dialog.style.zIndex = _zIndex + 1;
+			_zIndexFlag = false;
+		} else {
+			_dialog.style.zIndex = _zIndex;
+		}
+		// mousemove might run out of the dialog box during drag or resize, therefore we need to 
+		// attach the event to the whole document, but we need to take care that this  
+		// does not to mess up normal events outside of the dialog box.
+		if ( !(evt.target === _dialog || evt.target === _dialogTitle || evt.target === _buttons[0]) && !_isDrag && _resizeMode == '')
+			return;
+		_log('_onMouseUp ' + _dialog.id + ' go');
+		//_isClickEvent = false;
 		if (_isDrag) {
 			_setCursor('');
-			_isDrag = false;
+			_isDrag = false; 
 		}
 		else if (_isResize) {
 			_setCursor('');
 			_isResize = false;
 			_resizeMode = '';
+			_log('_onMouseUp ' + _dialog.id + ': set _resizeMode=' + _resizeMode + ', set _isResize=' + _isResize);	
 		}
 		else if (_isButton) {
+			_log('_onMouseUp ' + _dialog.id + ': ' + evt.target.name + ': _isButton=' + _isButton + ' go');
 			_whichButton.classList.remove('active');
 			_isButton = false;
 			_whichClick(_whichButton);
 		}
-		else
-			_isClickEvent = true;
+		//else
+			//_isClickEvent = true;
 		return _returnEvent(evt);
 	},
 	
+	// I've no idea why, but if I call _whichClick, I end up in another instance of a dialog box if there are more than one.
 	_whichClick = function(btn) {
+		_log('_whichClick ' + _dialog.id + ': ' + btn.textContent + ' ' + _callback.name);		
 		_dialog.style.display = 'none';
+		// Update of _showButton and _status should be done by the caller itself
+		/*
 		_showButton.disabled = false;
 		_showButton.focus();
 		if (btn === _buttons[0])
-			_status.innerHTML = 'Dialog hidden...';
+			// Use textContent instead if innerHTML 
+			_status.textContent = 'Dialog hidden...';
 		else
-			_status.innerHTML = btn.innerHTML + ' button clicked...';
+			_status.textContent = btn.textContent + ' button clicked...';
+		*/
+		if (_callback)
+			_callback(btn.name);
 	},
 	
 	_getOffset = function(elm) {
@@ -407,45 +472,71 @@ var _minW = 200,
 	},
 	
 	_setCursor = function(cur) {
+		//_log('_setCursor ' + _dialog.id + ': ' + cur);		
 		_dialog.style.cursor = cur;
 		_dialogTitle.style.cursor = cur;
 		_buttons[0].style.cursor = cur;
 	},
 	
 	_setDialogContent = function() {
+		_log('_setDialogContent ' + _dialog.id);		
 		var w = _dialog.clientWidth - 32,
-			h = _dialog.clientHeight - 128;
+			h = _dialog.clientHeight - (48 + 16 + (_buttons.length > 1 ? 16 + 32 + 16 : 0 )); // Ensure to get minimal height
 		_dialogContent.style.width = w + 'px';
 		_dialogContent.style.height = h + 'px';
-		_dialogButtonPane.style.width = w + 'px';
+		if (_dialogButtonPane) // The buttonpane is optional
+			_dialogButtonPane.style.width = w + 'px';
 		_dialogTitle.style.width = (w - 16) + 'px';
 	},
 	
 	_showDialog = function() {
+		_log('_showDialog ' + _dialog.id);		
 		_dialog.style.display = 'block';
-		_buttons[1].focus();
-		_status.innerHTML = 'Dialog showed...';
-		_showButton.disabled = true;
+		if (_buttons[1]) // buttons are optional
+			_buttons[1].focus();
+		else
+			_buttons[0].focus();
+		//_status.textContent = 'Dialog showed...'; // Update of _showButton and _status should be done by the caller itself
+		//_showButton.disabled = true; // Update of _showButton and _status should be done by the caller itself
 	},
 	
-	_init = function() {
-		_dialog = document.querySelector('.dialog');
-		_dialogTitle = document.querySelector('.dialog .titlebar');
-		_dialogContent = document.querySelector('.dialog .content');
-		_dialogButtonPane = document.querySelector('.dialog .buttonpane');
-		_tabBoundary = document.querySelector('.dialog .tabboundary');
+	_init = function(id, callback) {
+		_dialog = document.getElementById(id); // Let's use the id instead of a class to identify the DialogBox
+		_callback = callback; // Register callback function
+		_log('_init ' + _dialog.id);		
+		_dialogTitle = _dialog.querySelector('.titlebar'); // we do not need selector .dialog anymore
+		_dialogContent = _dialog.querySelector('.content');
+		_dialogButtonPane = _dialog.querySelector('.buttonpane');
+		//_tabBoundary = _dialog.querySelector('.tabboundary'); // variable not used until next change (why do we need this here?)
+		// Currently the caller has to define width and height of the dialog box 
+		_dialog.style.visibility = 'hidden'; // We dont want to see anything..
+		_dialog.style.display = 'block'; // but we need to render it to get the size of the dialog box
+		_buttons = _dialog.querySelectorAll('button');  // Ensure to get minimal width
+		_minW = Math.max(_dialog.clientWidth, _minW, (_buttons.length - 1) * 84 + 13); // Ensure to get minimal width
+		_dialog.style.width = _minW + 'px'; // Ensure to get minimal width
+		_minH = Math.max(_dialog.clientHeight, _minH, 48 + 16 + 12 + 14 + 12 +(_buttons.length > 1 ? 16 + 32 + 16 : 0 )); // Ensure to get minimal height
+		_dialog.style.height = _minH + 'px'; // Ensure to get minimal height
 		_setDialogContent();
 		_dialog.style.left = ((window.innerWidth - _dialog.clientWidth) / 2) + 'px';
 		_dialog.style.top = ((window.innerHeight - _dialog.clientHeight) / 2) + 'px';
+		_dialog.style.display = 'none'; // Let's hide it again..
+		_dialog.style.visibility = 'visible'; // and undo visibility = 'hidden'
 		_dialogTitle.tabIndex = '0';
 		_tabBoundary = document.createElement('div');
 		_tabBoundary.tabIndex = '0';
 		_dialog.appendChild(_tabBoundary);
 		_addEvent(_dialog, 'mousedown', _onMouseDown);
+		// mousemove might run out of the dialog during resize, therefore we need to 
+		// attach the event to the whole document, but we need to take care not to mess 
+		// up normal events outside of the dialog.
 		_addEvent(document, 'mousemove', _onMouseMove);
+		// mouseup might happen out of the dialog during resize, therefore we need to 
+		// attach the event to the whole document, but we need to take care not to mess 
+		// up normal events outside of the dialog.
 		_addEvent(document, 'mouseup', _onMouseUp);
-		_buttons = document.querySelectorAll('.dialog button');
-		_buttons[0].innerHTML = '&#x2716;';
+		//_buttons = _dialog.querySelectorAll('button'); // Already done
+		if (_buttons[0].textContent == '') // Use default symbol X in no other symbol is used
+			_buttons[0].innerHTML = '&#x2716;'; // use of innerHTML is required to show  Unicode characters
 		for (var i = 0; i < _buttons.length; i++) {
 			_addEvent(_buttons[i], 'click', _onClick);
 			_addEvent(_buttons[i], 'focus', _onFocus);
@@ -453,11 +544,19 @@ var _minW = 200,
 		}
 		_addEvent(_dialogTitle, 'focus', _adjustFocus);
 		_addEvent(_tabBoundary, 'focus', _adjustFocus);
-		var div = document.querySelector('.dialog .buttonset');
-		_minW = Math.max(_minW, (_buttons.length - 1) * 84 + 13);
-		_dialog.style.display = 'none';
-		_showButton = document.getElementById('show-dialog');
-		_status = document.getElementById('dialog-status');
+		//var div = _dialog.querySelector('.buttonset'); // variable not used
+		//_minW = Math.max(_minW, (_buttons.length - 1) * 84 + 13); // Already done
+		_zIndex = _dialog.style.zIndex;
+		_log('zIndex=' + _zIndex);
+		//_dialog.style.display = 'none'; // already done
+		//_showButton = document.getElementById('show-dialog'); // Update of _showButton and _status should be done by the caller itself
+		//_status = document.getElementById('dialog-status'); // Update of _showButton and _status should be done by the caller itself
 	};
 
-_init();
+	// Execute constructor
+	_init(id, callback);
+
+	// Public interface 
+	this.showDialog = _showDialog;
+	return this;
+}

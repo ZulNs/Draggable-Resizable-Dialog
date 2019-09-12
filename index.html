@@ -10,31 +10,159 @@
 <meta name="description" content="">
 <meta name="robots" content="all">
 <meta name="copyright" content="ZulNs">
-<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
 <!--link rel="icon" href="favicon.png" type="image/png" /-->
 <!--link rel="icon" href="favicon.ico" type="image/x-icon" /-->
+<style>
+body {
+	width: 100%;
+	height: 800px;
+	font-family: Verdana, sans-serif;
+	font-size: 12px;
+	color: #333;
+	background: #eee;
+}
+</style>
 </head>
 <body>
-<link rel="stylesheet" href="draggable-resizable-dialog.css" />
 
-<p><button id="show-dialog" onclick="_showDialog();">Show Dialog</button></p>
-<p id="dialog-status">Dialog hidden...</p>
-<p class="">To move, start dragging from the title bar of the dialog box.</p>
-<p class="">To resize, start dragging from any edge or any corner of the dialog box.</p>
-<div class="dialog" style="width:480px; height:240px;">
+<h1>Draggable and Resizable Dialog Box</h1>
+<p>Source: <a href="https://github.com/ZulNs/Draggable-Resizable-Dialog" target="_blank">https://github.com/ZulNs/Draggable-Resizable-Dialog</a></p>
+
+<style>
+.show-button {
+	height: 36px;
+	font-size: 1.2em;
+	cursor: pointer;
+	color: #fff;
+	background: #39c;
+}
+.show-button:disabled {
+	cursor: default;
+	color: #aaa;
+	background: #069;
+}
+.status-bar {
+	width: 480px;
+	padding: 6px 8px;
+	font-size: 1.2em;
+	color: #fff;
+	background: #e80;
+	border: 1px solid #aaa;
+}
+</style>
+
+<p>To move, start dragging from the title bar of the dialog box.</p>
+<p>To resize, start dragging from any edge or any corner of the dialog box.</p>
+
+<!-- First Dialog Box -->
+<link rel="stylesheet" href="draggable-resizable-dialog.css" />
+<script type="text/javascript" src="draggable-resizable-dialog.js"></script>
+
+<p><button id="show-dialog" class="show-button" onclick="showDialog();">Show Dialog</button></p>
+<p id="dialog-status" class="status-bar">Dialog hidden...</p>
+<script>
+_showDialogButton = document.getElementById('show-dialog');
+_statusDialog = document.getElementById('dialog-status');
+var dialog;
+function showDialog() {
+	_statusDialog.textContent = 'Dialog showed...';
+	_showDialogButton.disabled = true;
+	if (!dialog) {
+		var id = 'dialog';
+		// Instanciate the Dialog Box
+		dialog = new DialogBox(id, callbackDialog);
+	}
+	// Show Dialog Box
+	dialog.showDialog();
+
+	// Receive result from Dialog Box
+	function callbackDialog(btnName) {
+		_showDialogButton.disabled = false;
+		_showDialogButton.focus();
+		if (btnName == 'close')
+			_statusDialog.textContent = 'Dialog hidden...';
+		else
+			_statusDialog.textContent = btnName + ' button clicked...';
+	}
+}
+</script>
+
+<!-- The Dialog Box requires elements with class "dialog" "titlebar" and "content" for styling and selection.
+If you add buttons you need additional elements with class "buttonpane" and "buttonset".
+width and height are optional.
+-->
+<div id="dialog" class="dialog" style="min-width:400px; min-height:280px;">
 	<div class="titlebar">Dialog Title...</div>
-	<button>Close</button>
+	<button name="close"><!-- enter symbol here like &times; or &#x1f6c8; or use the default X if empty --></button>
 	<div class="content">
+		<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+		<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+		<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
 		<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
 	</div>
 	<div class="buttonpane">
 		<div class="buttonset">
-			<button>OK</button>
-			<button>Cancel</button>
+			<button name="ok">OK</button>
+			<button name="cancel">Cancel</button>
 		</div>
 	</div>
 </div>
 
-<script type="text/javascript" src="draggable-resizable-dialog.js"></script>
+<!-- Let's try another Dialog Box -->
+
+<p><button id="show-info" class="show-button" onclick="showInfo();">Show Info</button></p>
+<p id="info-status" class="status-bar" >Info hidden...</p>
+<script>
+_showInfoButton = document.getElementById('show-info');
+_statusInfo = document.getElementById('info-status');
+var infoBox;
+function showInfo() {
+	_statusInfo.textContent = 'Info showed...';
+	_showInfoButton.disabled = true;
+	if (!infoBox) {
+		var id = 'infoBox';
+		// Instanciate the Dialog Box
+		infoBox = new DialogBox(id, callbackInfo);
+	}
+	// Show DialogBox
+	infoBox.showDialog();
+
+	// Receive result from DialogBox
+	function callbackInfo(btnName) {
+		_showInfoButton.disabled = false;
+		_showInfoButton.focus();
+		if (btnName == 'close')
+			_statusInfo.textContent = 'Info hidden...';
+		else
+			_statusInfo.textContent = btnName + ' button clicked...';
+	}
+}
+</script>
+<div id="infoBox" class="dialog">
+	<div class="titlebar">Info...</div>
+	<button name="close"><!-- enter symbol here like &times; or &#x1f6c8; or use the default X if empty -->&#x1f6c8;</button>
+	<div class="content">
+		<p>Got it!</p>
+	</div>
+	<!-- Buttons are optional
+	<div class="buttonpane">
+		<div class="buttonset">
+			<button name="Button1">Button 1</button>
+			<button name="Button2">Button 2</button>
+			<button name="Button3">Button 3</button>
+			<button name="Button4">Button 4</button>
+			<button name="Button5">Button 5</button>
+			<button name="Button6">Button 6</button>
+			<button name="ok">OK</button>
+			<button name="cancel">Cancel</button>
+		</div>
+	</div>
+	-->
+</div>
+
+<!-- end --> 
+<p>Have fun!</p>
+
 </body>
 </html>

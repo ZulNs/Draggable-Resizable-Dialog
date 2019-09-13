@@ -2,13 +2,13 @@
  * Pure JavaScript for Draggable and Risizable Dialog Box
  *
  * Designed by ZulNs, @Gorontalo, Indonesia, 7 June 2017
- * Extended by frank.buchholz, Germany, 2019
+ * Extended by FrankBuchholz, Germany, 2019
  */
  // Encapsulate variables and functions to allow instanciation of multiple dialog boxes
 function DialogBox(id, callback) {
 		
-var	_minW = 100, // Get's calculated
-	_minH = 1, // Get's calculated
+var	_minW = 100, // The exact value get's calculated
+	_minH = 1, // The exact value get's calculated
 	_resizePixel = 5,
 	_hasEventListeners = !!window.addEventListener,
 	_parent,
@@ -443,7 +443,7 @@ var	_minW = 100, // Get's calculated
 	
 	// I've no idea why, but if I call _whichClick, I end up in another instance of a dialog box if there are more than one.
 	_whichClick = function(btn) {
-		_log('_whichClick ' + _dialog.id + ': ' + btn.textContent + ' ' + _callback.name);		
+		_log('_whichClick ' + _dialog.id + ': ' + btn.textContent + ' ' + (_callback ? _callback.name : ''));		
 		_dialog.style.display = 'none';
 		// Update of _showButton and _status should be done by the caller itself
 		/*
@@ -480,12 +480,36 @@ var	_minW = 100, // Get's calculated
 	
 	_setDialogContent = function() {
 		_log('_setDialogContent ' + _dialog.id);		
-		var w = _dialog.clientWidth - 32,
-			h = _dialog.clientHeight - (48 + 16 + (_buttons.length > 1 ? 16 + 32 + 16 : 0 )); // Ensure to get minimal height
+
+		// Let's try to get rid of some of constants in javascript but use values from css
+		var	_dialogContentStyle = getComputedStyle(_dialogContent),
+			_dialogButtonPaneStyle,
+			_dialogButtonPaneStyleBefore;
+		if (_buttons.length > 1) {
+			_dialogButtonPaneStyle = getComputedStyle(_dialogButtonPane);
+			_dialogButtonPaneStyleBefore = getComputedStyle(_dialogButtonPane, ":before");
+		}
+
+		var w = _dialog.clientWidth 
+				- parseInt( _dialogContentStyle.left) // .dialog .content { left: 16px; }
+				- 16 // right margin?
+				,
+			h = _dialog.clientHeight - (
+				parseInt(_dialogContentStyle.top) // .dialog .content { top: 48px } 
+				+ 16 // ?
+				+ (_buttons.length > 1 ? 
+					+ parseInt(_dialogButtonPaneStyleBefore.borderBottom) // .dialog .buttonpane:before { border-bottom: 1px; }
+					- parseInt(_dialogButtonPaneStyleBefore.top) // .dialog .buttonpane:before { height: 0; top: -16px; }
+					+ parseInt(_dialogButtonPaneStyle.height) // .dialog .buttonset button { height: 32px; }
+					+ parseInt(_dialogButtonPaneStyle.bottom) // .dialog .buttonpane { bottom: 16px; }
+					: 0 )
+				); // Ensure to get minimal height
 		_dialogContent.style.width = w + 'px';
 		_dialogContent.style.height = h + 'px';
+
 		if (_dialogButtonPane) // The buttonpane is optional
 			_dialogButtonPane.style.width = w + 'px';
+
 		_dialogTitle.style.width = (w - 16) + 'px';
 	},
 	
@@ -504,27 +528,71 @@ var	_minW = 100, // Get's calculated
 		_dialog = document.getElementById(id); // Let's use the id instead of a class to identify the DialogBox
 		_callback = callback; // Register callback function
 		_log('_init ' + _dialog.id);		
+
+		_dialog.style.visibility = 'hidden'; // We dont want to see anything..
+		_dialog.style.display = 'block'; // but we need to render it to get the size of the dialog box
+
 		_dialogTitle = _dialog.querySelector('.titlebar'); // we do not need selector .dialog anymore
 		_dialogContent = _dialog.querySelector('.content');
 		_dialogButtonPane = _dialog.querySelector('.buttonpane');
-		//_tabBoundary = _dialog.querySelector('.tabboundary'); // variable not used until next change (why do we need this here?)
-		// Currently the caller has to define width and height of the dialog box 
-		_dialog.style.visibility = 'hidden'; // We dont want to see anything..
-		_dialog.style.display = 'block'; // but we need to render it to get the size of the dialog box
+		//_tabBoundary = _dialog.querySelector('.tabboundary'); // variable value not used
 		_buttons = _dialog.querySelectorAll('button');  // Ensure to get minimal width
-		_minW = Math.max(_dialog.clientWidth, _minW, (_buttons.length - 1) * 84 + 13); // Ensure to get minimal width
-		_dialog.style.width = _minW + 'px'; // Ensure to get minimal width
-		_minH = Math.max(_dialog.clientHeight, _minH, 48 + 16 + 12 + 14 + 12 +(_buttons.length > 1 ? 16 + 32 + 16 : 0 )); // Ensure to get minimal height
-		_dialog.style.height = _minH + 'px'; // Ensure to get minimal height
+
+		// Let's try to get rid of some of constants in javascript but use values from css
+		var _dialogStyle = getComputedStyle(_dialog),
+			_dialogTitleStyle = getComputedStyle(_dialogTitle),
+			_dialogContentStyle = getComputedStyle(_dialogContent),
+			_dialogButtonPaneStyle,
+			_dialogButtonPaneStyleBefore,
+			_dialogButtonStyle;
+		if (_buttons.length > 1) {
+			_dialogButtonPaneStyle = getComputedStyle(_dialogButtonPane);
+			_dialogButtonPaneStyleBefore = getComputedStyle(_dialogButtonPane, ":before");
+			_dialogButtonStyle = getComputedStyle(_buttons[1]);
+		}
+
+		// Calculate minimal width
+		_minW = Math.max(_dialog.clientWidth, _minW, 
+			+ (_buttons.length > 1 ? 
+				+ (_buttons.length - 1) * parseInt(_dialogButtonStyle.width) // .dialog .buttonset button { width: 64px; }
+				+ (_buttons.length - 1 - 1) * 16 // .dialog .buttonset button { margin-left: 16px; } // but not for first-child
+				+ (_buttons.length - 1 - 1) * 16 / 2 // The formula is not correct, however, with fixed value 16 for margin-left: 16px it works
+				: 0 )
+			);
+		_dialog.style.width = _minW + 'px';
+		
+		// Calculate minimal height
+		_minH = Math.max(_dialog.clientHeight, _minH, 
+			+ parseInt(_dialogContentStyle.top) // .dialog .content { top: 48px } 
+			+ (2 * parseInt(_dialogStyle.border)) // .dialog { border: 1px }
+			+ 16 // ?
+			+ 12 // .p { margin-block-start: 1em; } // default
+			+ 12 // .dialog { font-size: 12px; } // 1em = 12px
+			+ 12 // .p { margin-block-end: 1em; } // default
+			+(_buttons.length > 1 ?
+				+ parseInt(_dialogButtonPaneStyleBefore.borderBottom) // .dialog .buttonpane:before { border-bottom: 1px; }
+				- parseInt(_dialogButtonPaneStyleBefore.top) // .dialog .buttonpane:before { height: 0; top: -16px; }
+				+ parseInt(_dialogButtonPaneStyle.height) // .dialog .buttonset button { height: 32px; }
+				+ parseInt(_dialogButtonPaneStyle.bottom) // .dialog .buttonpane { bottom: 16px; }
+				: 0 )
+			);
+		_dialog.style.height = _minH + 'px';
+
 		_setDialogContent();
+		
+		// center the dialog box
 		_dialog.style.left = ((window.innerWidth - _dialog.clientWidth) / 2) + 'px';
 		_dialog.style.top = ((window.innerHeight - _dialog.clientHeight) / 2) + 'px';
+		
 		_dialog.style.display = 'none'; // Let's hide it again..
 		_dialog.style.visibility = 'visible'; // and undo visibility = 'hidden'
+
 		_dialogTitle.tabIndex = '0';
+
 		_tabBoundary = document.createElement('div');
 		_tabBoundary.tabIndex = '0';
 		_dialog.appendChild(_tabBoundary);
+
 		_addEvent(_dialog, 'mousedown', _onMouseDown);
 		// mousemove might run out of the dialog during resize, therefore we need to 
 		// attach the event to the whole document, but we need to take care not to mess 
@@ -535,7 +603,7 @@ var	_minW = 100, // Get's calculated
 		// up normal events outside of the dialog.
 		_addEvent(document, 'mouseup', _onMouseUp);
 		//_buttons = _dialog.querySelectorAll('button'); // Already done
-		if (_buttons[0].textContent == '') // Use default symbol X in no other symbol is used
+		if (_buttons[0].textContent == '') // Use default symbol X if no other symbol is provided
 			_buttons[0].innerHTML = '&#x2716;'; // use of innerHTML is required to show  Unicode characters
 		for (var i = 0; i < _buttons.length; i++) {
 			_addEvent(_buttons[i], 'click', _onClick);
@@ -546,6 +614,7 @@ var	_minW = 100, // Get's calculated
 		_addEvent(_tabBoundary, 'focus', _adjustFocus);
 		//var div = _dialog.querySelector('.buttonset'); // variable not used
 		//_minW = Math.max(_minW, (_buttons.length - 1) * 84 + 13); // Already done
+
 		_zIndex = _dialog.style.zIndex;
 		_log('zIndex=' + _zIndex);
 		//_dialog.style.display = 'none'; // already done

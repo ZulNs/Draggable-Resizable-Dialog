@@ -43,7 +43,7 @@ body {
 	background: #069;
 }
 .status-bar {
-	width: 480px;
+	width: 200px;
 	padding: 6px 8px;
 	font-size: 1.2em;
 	color: #fff;
@@ -109,43 +109,42 @@ width and height are optional.
 	</div>
 </div>
 
-<!-- Let's try another Dialog Box -->
+<!-- Let's try another Dialog Box with many buttons -->
 
-<p><button id="show-info" class="show-button" onclick="showInfo();">Show Info</button></p>
-<p id="info-status" class="status-bar" >Info hidden...</p>
+<p><button id="show-buttons" class="show-button" onclick="showButtons();">Show Buttons</button></p>
+<p id="buttons-status" class="status-bar" >Buttons hidden...</p>
 <script>
-_showInfoButton = document.getElementById('show-info');
-_statusInfo = document.getElementById('info-status');
-var infoBox;
-function showInfo() {
-	_statusInfo.textContent = 'Info showed...';
-	_showInfoButton.disabled = true;
-	if (!infoBox) {
-		var id = 'infoBox';
+_showButtonsButton = document.getElementById('show-buttons');
+_statusButtons = document.getElementById('buttons-status');
+var buttonsBox;
+function showButtons() {
+	_statusButtons.textContent = 'Buttons showed...';
+	_showButtonsButton.disabled = true;
+	if (!buttonsBox) {
+		var id = 'buttonsBox';
 		// Instanciate the Dialog Box
-		infoBox = new DialogBox(id, callbackInfo);
+		buttonsBox = new DialogBox(id, callbackButtons);
 	}
 	// Show DialogBox
-	infoBox.showDialog();
+	buttonsBox.showDialog();
 
 	// Receive result from DialogBox
-	function callbackInfo(btnName) {
-		_showInfoButton.disabled = false;
-		_showInfoButton.focus();
+	function callbackButtons(btnName) {
+		_showButtonsButton.disabled = false;
+		_showButtonsButton.focus();
 		if (btnName == 'close')
-			_statusInfo.textContent = 'Info hidden...';
+			_statusButtons.textContent = 'Buttons hidden...';
 		else
-			_statusInfo.textContent = btnName + ' button clicked...';
+			_statusButtons.textContent = btnName + ' button clicked...';
 	}
 }
 </script>
-<div id="infoBox" class="dialog">
-	<div class="titlebar">Info...</div>
-	<button name="close"><!-- enter symbol here like &times; or &#x1f6c8; or use the default X if empty -->&#x1f6c8;</button>
+<div id="buttonsBox" class="dialog">
+	<div class="titlebar">Decision...</div>
+	<button name="close"><!-- enter symbol here like &times; or &#x1f6c8; or use the default X if empty --></button>
 	<div class="content">
-		<p>Got it!</p>
+		<p>It's your decision!</p>
 	</div>
-	<!-- Buttons are optional
 	<div class="buttonpane">
 		<div class="buttonset">
 			<button name="Button1">Button 1</button>
@@ -154,11 +153,40 @@ function showInfo() {
 			<button name="Button4">Button 4</button>
 			<button name="Button5">Button 5</button>
 			<button name="Button6">Button 6</button>
-			<button name="ok">OK</button>
-			<button name="cancel">Cancel</button>
+			<button name="Button7">Button 7</button>
+			<button name="Button8">Button 8</button>
+			<button name="Button9">Button 9</button>
 		</div>
 	</div>
-	-->
+</div>
+
+<!-- Finally show a small Info Box with modified styling -->
+
+<p><button id="show-info" class="show-button" onclick="showInfo();">Show Info</button></p>
+<script>
+var infoBox;
+function showInfo() {
+	if (!infoBox) infoBox = new DialogBox("infoBox");
+	infoBox.showDialog();
+}
+</script>
+<style>
+#infoBox.dialog {
+	background: #999;
+}
+#infoBox.dialog .titlebar,
+#infoBox.dialog .buttonset button {
+	background: #4AD;
+}
+#infoBox.dialog .buttonset button.active {
+	background: #2b8;
+	border-color: #eee;
+}
+</style>
+<div id="infoBox" class="dialog">
+	<div class="titlebar">Info...</div>
+	<button name="close">&#x1f6c8;</button>
+	<div class="content"><p>Got it!</p></div>
 </div>
 
 <!-- end --> 

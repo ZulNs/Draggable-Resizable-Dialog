@@ -29,18 +29,12 @@ var	_minW = 100, // The exact value get's calculated
 	_whichButton,
 	_buttons,
 	_tabBoundary,
-	//_showButton, // Update of _showButton and _status should be done by the caller itself..
-	//_status, // Update of _showButton and _status should be done by the caller itself..
-	_callback, // .. therefore we use a cllback function which transfers the name of the selected button to the caller
+	_callback, // Callback function which transfers the name of the selected button to the caller
 	_zIndex, // Initial zIndex of this dialog box 
 	_zIndexFlag = false, // Bring this dialog box to front 
 	_setCursor, // Forward declaration to get access to this function in the closure
 	_whichClick, // Forward declaration to get access to this function in the closure
 	_setDialogContent, // Forward declaration to get access to this function in the closure
-	
-	_log = function(text) {
-		if (false) console.log(text); // show log if condition is set to true
-	},
 	
 	_addEvent = function(elm, evt, callback) {
 		if (elm == null || typeof(elm) == undefined)
@@ -110,7 +104,6 @@ var	_minW = 100, // The exact value get's calculated
 	
 	_onClick = function(evt) {
 		evt = evt || window.event;
-		_log('_onClick ' + _dialog.id + ': ' + evt.target.name);		
 		//if (_isClickEvent)
 			_whichClick(evt.target);
 		//else
@@ -120,14 +113,12 @@ var	_minW = 100, // The exact value get's calculated
 	
 	_onMouseDown = function(evt) {
 		evt = evt || window.event;
-		_log('\n_onMouseDown ' + _dialog.id + ': ' + evt.target.nodeName + ' ' + evt.target.name);
 		_zIndexFlag = true;
 		// mousedown might happen on any place of the dialog box, therefore 
 		// we need to take care that this does not to mess up normal events 
 		// on the content of the dialog box, i.e. to copy text
 		if ( !(evt.target === _dialog || evt.target === _dialogTitle || evt.target === _buttons[0]))
 			return;
-		_log('_onMouseDown ' + _dialog.id + ' go');		
 		var rect = _getOffset(_dialog);
 		_maxX = Math.max(
 			document.documentElement["clientWidth"],
@@ -166,7 +157,6 @@ var	_minW = 100, // The exact value get's calculated
 		}
 		else if (_resizeMode != '') {
 			_isResize = true;
-			_log('_onMouseDown ' + _dialog.id + ': _resizeMode=' + _resizeMode + ', set _isResize=' + _isResize);	
 		}	
 		var r = _dialog.getBoundingClientRect();
 		return _returnEvent(evt);
@@ -235,7 +225,6 @@ var	_minW = 100, // The exact value get's calculated
 			window.scrollTo(scrollL, scrollT);
 		}
 		else if (_isResize) {
-			//_log('_onMouseMove ' + _dialog.id + ': _resizeMode=' + _resizeMode + ', _isResize=' + _isResize);	
 			var dw, dh, w, h;
 			if (_resizeMode == 'w') {
 				dw = _startX - evt.pageX;
@@ -355,7 +344,6 @@ var	_minW = 100, // The exact value get's calculated
 				_dialog.style.width = w + 'px';
 				_dialog.style.height = h + 'px';
 			}
-			_log('_setDialogContent ' + _dialog.id + ': ' + evt.target.id);		
 			_setDialogContent();
 		}
 		else if (!_isButton) {
@@ -382,12 +370,10 @@ var	_minW = 100, // The exact value get's calculated
 					cs = 'nwse-resize';
 				_setCursor(cs);
 				_resizeMode = rm;
-				//_log('_onMouseMove ' + _dialog.id + ': set _resizeMode=' + _resizeMode + ', _isResize=' + _isResize);	
 			}
 			else if (rm == '' && _resizeMode != '') {
 				_setCursor('');
 				_resizeMode = '';
-				//_log('_onMouseMove ' + _dialog.id + ': set _resizeMode=' + _resizeMode + ', _isResize=' + _isResize);	
 			}
 			if (evt.target != _buttons[0] && evt.target.tagName.toLowerCase() == 'button' || evt.target === _buttons[0] && rm == '') {
 				if (!_isButtonHovered || _isButtonHovered && evt.target != _whichButton) {
@@ -406,7 +392,6 @@ var	_minW = 100, // The exact value get's calculated
 	
 	_onMouseUp = function(evt) {
 		evt = evt || window.event;
-		_log('_onMouseUp ' + _dialog.id + ': ' + evt.target.nodeName + ' ' + evt.target.name + ': _isButton=' + _isButton);
 		if (_zIndexFlag) {
 			_dialog.style.zIndex = _zIndex + 1;
 			_zIndexFlag = false;
@@ -418,7 +403,6 @@ var	_minW = 100, // The exact value get's calculated
 		// does not to mess up normal events outside of the dialog box.
 		if ( !(evt.target === _dialog || evt.target === _dialogTitle || evt.target === _buttons[0]) && !_isDrag && _resizeMode == '')
 			return;
-		_log('_onMouseUp ' + _dialog.id + ' go');
 		//_isClickEvent = false;
 		if (_isDrag) {
 			_setCursor('');
@@ -428,10 +412,8 @@ var	_minW = 100, // The exact value get's calculated
 			_setCursor('');
 			_isResize = false;
 			_resizeMode = '';
-			_log('_onMouseUp ' + _dialog.id + ': set _resizeMode=' + _resizeMode + ', set _isResize=' + _isResize);	
 		}
 		else if (_isButton) {
-			_log('_onMouseUp ' + _dialog.id + ': ' + evt.target.name + ': _isButton=' + _isButton + ' go');
 			_whichButton.classList.remove('active');
 			_isButton = false;
 			_whichClick(_whichButton);
@@ -441,20 +423,8 @@ var	_minW = 100, // The exact value get's calculated
 		return _returnEvent(evt);
 	},
 	
-	// I've no idea why, but if I call _whichClick, I end up in another instance of a dialog box if there are more than one.
 	_whichClick = function(btn) {
-		_log('_whichClick ' + _dialog.id + ': ' + btn.textContent + ' ' + (_callback ? _callback.name : ''));		
 		_dialog.style.display = 'none';
-		// Update of _showButton and _status should be done by the caller itself
-		/*
-		_showButton.disabled = false;
-		_showButton.focus();
-		if (btn === _buttons[0])
-			// Use textContent instead if innerHTML 
-			_status.textContent = 'Dialog hidden...';
-		else
-			_status.textContent = btn.textContent + ' button clicked...';
-		*/
 		if (_callback)
 			_callback(btn.name);
 	},
@@ -472,15 +442,12 @@ var	_minW = 100, // The exact value get's calculated
 	},
 	
 	_setCursor = function(cur) {
-		//_log('_setCursor ' + _dialog.id + ': ' + cur);		
 		_dialog.style.cursor = cur;
 		_dialogTitle.style.cursor = cur;
 		_buttons[0].style.cursor = cur;
 	},
 	
 	_setDialogContent = function() {
-		_log('_setDialogContent ' + _dialog.id);		
-
 		// Let's try to get rid of some of constants in javascript but use values from css
 		var	_dialogContentStyle = getComputedStyle(_dialogContent),
 			_dialogButtonPaneStyle,
@@ -514,28 +481,23 @@ var	_minW = 100, // The exact value get's calculated
 	},
 	
 	_showDialog = function() {
-		_log('_showDialog ' + _dialog.id);		
 		_dialog.style.display = 'block';
 		if (_buttons[1]) // buttons are optional
 			_buttons[1].focus();
 		else
 			_buttons[0].focus();
-		//_status.textContent = 'Dialog showed...'; // Update of _showButton and _status should be done by the caller itself
-		//_showButton.disabled = true; // Update of _showButton and _status should be done by the caller itself
 	},
 	
 	_init = function(id, callback) {
-		_dialog = document.getElementById(id); // Let's use the id instead of a class to identify the DialogBox
+		_dialog = document.getElementById(id);
 		_callback = callback; // Register callback function
-		_log('_init ' + _dialog.id);		
 
 		_dialog.style.visibility = 'hidden'; // We dont want to see anything..
 		_dialog.style.display = 'block'; // but we need to render it to get the size of the dialog box
 
-		_dialogTitle = _dialog.querySelector('.titlebar'); // we do not need selector .dialog anymore
+		_dialogTitle = _dialog.querySelector('.titlebar');
 		_dialogContent = _dialog.querySelector('.content');
 		_dialogButtonPane = _dialog.querySelector('.buttonpane');
-		//_tabBoundary = _dialog.querySelector('.tabboundary'); // variable value not used
 		_buttons = _dialog.querySelectorAll('button');  // Ensure to get minimal width
 
 		// Let's try to get rid of some of constants in javascript but use values from css
@@ -602,7 +564,6 @@ var	_minW = 100, // The exact value get's calculated
 		// attach the event to the whole document, but we need to take care not to mess 
 		// up normal events outside of the dialog.
 		_addEvent(document, 'mouseup', _onMouseUp);
-		//_buttons = _dialog.querySelectorAll('button'); // Already done
 		if (_buttons[0].textContent == '') // Use default symbol X if no other symbol is provided
 			_buttons[0].innerHTML = '&#x2716;'; // use of innerHTML is required to show  Unicode characters
 		for (var i = 0; i < _buttons.length; i++) {
@@ -612,14 +573,8 @@ var	_minW = 100, // The exact value get's calculated
 		}
 		_addEvent(_dialogTitle, 'focus', _adjustFocus);
 		_addEvent(_tabBoundary, 'focus', _adjustFocus);
-		//var div = _dialog.querySelector('.buttonset'); // variable not used
-		//_minW = Math.max(_minW, (_buttons.length - 1) * 84 + 13); // Already done
 
 		_zIndex = _dialog.style.zIndex;
-		_log('zIndex=' + _zIndex);
-		//_dialog.style.display = 'none'; // already done
-		//_showButton = document.getElementById('show-dialog'); // Update of _showButton and _status should be done by the caller itself
-		//_status = document.getElementById('dialog-status'); // Update of _showButton and _status should be done by the caller itself
 	};
 
 	// Execute constructor
